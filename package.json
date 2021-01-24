@@ -1,0 +1,28 @@
+{
+  "name": "coinbase-swing",
+  "version": "1.0.0",
+  "description": "A simple swing trading app running on Coinbase Pro",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/swimclan/coinbase-swing.git"
+  },
+  "author": "Matthew B Herron",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/swimclan/coinbase-swing/issues"
+  },
+  "homepage": "https://github.com/swimclan/coinbase-swing#readme",
+  "dependencies": {
+    "coinbase-pro": "^0.9.0",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "interval-clock": "0.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
+}
