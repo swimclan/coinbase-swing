@@ -1,5 +1,6 @@
 const CoinbasePro = require("coinbase-pro");
 const { exchange } = require("../lib/constants");
+const { wait } = require("../lib/utils");
 
 const instances = {};
 
@@ -31,19 +32,38 @@ function CoinbaseFactory(env) {
 }
 
 async function State({ publicClient, authClient }) {
-  const account = await authClient.getAccount();
-  const usdInstrument = account.find((inst) => inst.currency === "USD");
-  const stats = await publicClient.getProduct24HrStats("BTC-USD");
-  const ticker = await publicClient.getProductTicker("BTC-USD");
-  const open = stats.open;
-  const price = ticker.price;
+  let ret = { cash: 0, products: {} };
+  try {
+    const [products, account] = await Promise.all([
+      publicClient.getProducts(),
+      authClient.getAccount(),
+    ]);
+    const usdInstrument = account.find((inst) => inst.currency === "USD") || {};
+    ret.cash = usdInstrument.available || 0;
+    const targetProductIds = products
+      .map((p) => p.id)
+      .filter((id) => id.match(/USD$/));
+    for (const targetProductId of targetProductIds) {
+      const [stats, ticker] = await Promise.all([
+        publicClient.getProduct24HrStats(targetProductId),
+        publicClient.getProductTicker(targetProductId),
+      ]);
+      await wait(1000);
+      const open = stats.open;
+      const price = ticker.price;
+      ret.products[targetProductId] = {
+        change: (price - open) / open,
+      };
+    }
+  } catch (error) {
+    typeof error === "string" && console.error(error);
+    typeof error === "object" &&
+      console.log(error.message || error.data || error.body);
+  }
 
   return {
     get() {
-      return {
-        usdValue: usdInstrument.available,
-        result: { change: (price - open) / open },
-      };
+      return ret;
     },
   };
 }

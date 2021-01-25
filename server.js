@@ -6,11 +6,12 @@ const Clock = require("interval-clock");
 const { public: publicClient, auth: authClient } = CoinbaseFactory(process.env);
 
 // Set clock
-const interval = Clock("5s");
+const interval = Clock("1m");
 interval.on("tick", main);
 
 // Main routine
 async function main() {
+  console.log("Fetching state");
   const state = await State({ publicClient, authClient });
   console.log(state.get());
 }
