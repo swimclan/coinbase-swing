@@ -18,25 +18,20 @@ const { public: publicClient, auth: authClient } = CoinbaseFactory(process.env);
 const interval = Clock(wakeTime || "20m");
 interval.on("tick", main);
 
-// Main routine
-async function main() {
-  console.log("Fetching state");
-  const state = await StateFactory({ publicClient, authClient });
+async function executeBuy(state, order) {
   const sortedState = sortByPercentChange(state.get());
   const productToBuy = sortedState.products[0];
-  const order = OrderFactory({ authClient });
 
   console.log(`Buying...`);
   console.log(productToBuy);
-  const buyOrder = await order.buy({
+  return await order.buy({
     product: productToBuy,
     cash: sortedState.cash,
     fraction,
   });
-  if (!buyOrder) {
-    console.log("No buy opportunity");
-    return;
-  }
+}
+
+async function executeSell(buyOrder, order, margin) {
   let filled = false;
   let completedOrder;
   while (!filled) {
@@ -46,5 +41,35 @@ async function main() {
     }
   }
   console.log("Placing limit sell");
-  await order.sell({ ...buyOrder, margin });
+  return await order.sell({ ...buyOrder, margin });
+}
+
+// Main routine
+async function main() {
+  console.log("Fetching state");
+  const state = await StateFactory({ publicClient, authClient });
+  const order = OrderFactory({ authClient });
+  let buyOrder;
+  try {
+    buyOrder = await executeBuy(state, order);
+  } catch (err) {
+    buyOrder = null;
+  }
+
+  if (!buyOrder) {
+    console.log("No buy opportunity or failure occured");
+    return;
+  }
+  let sellOrder,
+    sold = false;
+  while (!sold) {
+    try {
+      sellOrder = await executeSell(buyOrder, order, margin);
+      sold = true;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  sellOrder && console.log("Sold...");
+  sellOrder && console.log(sellOrder);
 }
