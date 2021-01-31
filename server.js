@@ -48,7 +48,12 @@ async function executeSell(buyOrder, order, margin) {
 async function main() {
   console.log("Fetching state");
   const state = await StateFactory({ publicClient, authClient });
-  const order = OrderFactory({ authClient });
+  const order = OrderFactory({ authClient, publicClient });
+
+  console.log("Analyzing existing orders");
+  const resells = await order.remargin(margin);
+  console.log(`Remargined ${resells.length} orders`);
+
   let buyOrder;
   try {
     buyOrder = await executeBuy(state, order);

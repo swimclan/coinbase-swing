@@ -75,7 +75,7 @@ async function StateFactory({ publicClient, authClient }) {
   };
 }
 
-function OrderFactory({ authClient }) {
+function OrderFactory({ authClient, publicClient }) {
   let targetPrice;
   return {
     async buy({ product, cash, fraction }) {
@@ -94,16 +94,44 @@ function OrderFactory({ authClient }) {
         size,
       });
     },
-    async sell({ size, product_id, margin }) {
-      const limitPrice = calcLimitPrice(targetPrice, margin);
+    async sell({ price, size, product_id, margin }) {
+      const limitPrice = calcLimitPrice(price || targetPrice, margin);
       return await authClient.placeOrder({
         side: "sell",
         type: "limit",
         price: limitPrice.toFixed(2),
         size: +size,
         product_id,
-        post_only: true,
+        post_only: false,
       });
+    },
+    async getAll() {
+      return await authClient.getOrders();
+    },
+    async remargin(margin) {
+      const currentOrders = await authClient.getOrders();
+      const ret = [];
+      for (const currentOrder of currentOrders) {
+        const ticker = await publicClient.getProductTicker(
+          currentOrder.product_id
+        );
+        const diff = +currentOrder.price - +ticker.price;
+        const diffRate = diff / +currentOrder.price - margin;
+        if (diffRate > margin) {
+          await authClient.cancelOrder(currentOrder.id);
+          const newSellOrder = await this.sell({
+            price: ticker.price,
+            size: +currentOrder.size,
+            product_id: currentOrder.product_id,
+            margin: 0.001,
+          });
+          ret.push(newSellOrder);
+        }
+      }
+      return ret;
+    },
+    async cancel(id) {
+      return await authClient.cancelOrder(id);
     },
   };
 }
