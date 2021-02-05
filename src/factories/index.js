@@ -115,6 +115,7 @@ function OrderFactory({ authClient, publicClient }) {
         const ticker = await publicClient.getProductTicker(
           currentOrder.product_id
         );
+        await wait(500);
         const diff = +currentOrder.price - +ticker.price;
         const diffRate = diff / +currentOrder.price - margin;
         if (diffRate > margin) {
