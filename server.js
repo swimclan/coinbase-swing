@@ -4,7 +4,7 @@ const {
   StateFactory,
   OrderFactory,
 } = require("./src/factories/index");
-const { sortByPercentChange } = require("./src/lib/utils");
+const { sortByPercentChange, wait } = require("./src/lib/utils");
 const Clock = require("interval-clock");
 
 const wakeTime = process.argv[2];
@@ -34,11 +34,17 @@ async function executeBuy(state, order) {
 async function executeSell(buyOrder, order, margin) {
   let filled = false;
   let completedOrder;
-  while (!filled) {
+  let tryCount = 1;
+  while (!filled && tryCount <= 100) {
     completedOrder = await authClient.getOrder(buyOrder.id);
     if (+completedOrder.filled_size > 0) {
       filled = true;
     }
+    tryCount++;
+    await wait(500);
+  }
+  if (!filled) {
+    throw new Error("Couldnt execute the sell, trying again");
   }
   console.log("Placing limit sell");
   return await order.sell({ ...buyOrder, margin });
