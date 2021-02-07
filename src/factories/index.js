@@ -118,7 +118,7 @@ function OrderFactory({ authClient, publicClient }) {
         await wait(500);
         const diff = +currentOrder.price - +ticker.price;
         const diffRate = diff / +currentOrder.price - margin;
-        if (diffRate > margin) {
+        if (diffRate > margin / 2) {
           await authClient.cancelOrder(currentOrder.id);
           const newSellOrder = await this.sell({
             price: ticker.price,
