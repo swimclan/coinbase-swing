@@ -64,6 +64,7 @@ async function main() {
   try {
     buyOrder = await executeBuy(state, order);
   } catch (err) {
+    console.error(err);
     buyOrder = null;
   }
 
