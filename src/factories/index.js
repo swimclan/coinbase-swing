@@ -45,8 +45,14 @@ async function StateFactory({ publicClient, authClient }) {
     const usdInstrument = account.find((inst) => inst.currency === "USD") || {};
     ret.cash = usdInstrument.available || 0;
     const targetProducts = products
-      .map((p) => ({ id: p.id, inc: p.base_increment, min: p.base_min_size }))
-      .filter(({ id }) => id.match(/USD$/));
+      .map((p) => ({
+        id: p.id,
+        inc: p.base_increment,
+        min: p.base_min_size,
+        limitOnly: p.limit_only,
+      }))
+      .filter(({ id }) => id.match(/USD$/))
+      .filter(({ limitOnly }) => !limitOnly);
 
     for (const targetProduct of targetProducts) {
       const { id, inc, min } = targetProduct;
