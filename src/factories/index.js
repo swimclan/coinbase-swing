@@ -109,25 +109,30 @@ function OrderFactory({ authClient, publicClient }) {
       return await authClient.getOrders();
     },
     async remargin(margin) {
-      const currentOrders = await authClient.getOrders();
-      const ret = [];
-      for (const currentOrder of currentOrders) {
-        const ticker = await publicClient.getProductTicker(
-          currentOrder.product_id
-        );
-        await wait(500);
-        const diff = +currentOrder.price - +ticker.price;
-        const diffRate = diff / +currentOrder.price - margin;
-        if (diffRate > margin / 2) {
-          await authClient.cancelOrder(currentOrder.id);
-          const newSellOrder = await this.sell({
-            price: ticker.price,
-            size: +currentOrder.size,
-            product_id: currentOrder.product_id,
-            margin: 0.001,
-          });
-          ret.push(newSellOrder);
+      let ret = [];
+      try {
+        const currentOrders = await authClient.getOrders();
+        for (const currentOrder of currentOrders) {
+          const ticker = await publicClient.getProductTicker(
+            currentOrder.product_id
+          );
+          await wait(500);
+          const diff = +currentOrder.price - +ticker.price;
+          const diffRate = diff / +currentOrder.price - margin;
+          if (diffRate > margin / 2) {
+            await authClient.cancelOrder(currentOrder.id);
+            const newSellOrder = await this.sell({
+              price: ticker.price,
+              size: +currentOrder.size,
+              product_id: currentOrder.product_id,
+              margin: 0.001,
+            });
+            ret.push(newSellOrder);
+          }
         }
+      } catch (err) {
+        console.error("Remargin failed");
+        console.error(err);
       }
       return ret;
     },
