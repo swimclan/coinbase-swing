@@ -83,7 +83,8 @@ async function main() {
       sellOrder = await executeSell(buyOrder, order, margin);
       sold = true;
     } catch (err) {
-      console.error(err);
+      console.warn("Couldnt get sell order placed. Trying again....");
+      // do nothing
     }
   }
   sellOrder && console.log("Sold...");
