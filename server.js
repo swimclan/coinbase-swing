@@ -56,6 +56,10 @@ async function main() {
   const state = await StateFactory({ publicClient, authClient });
   const order = OrderFactory({ authClient, publicClient });
 
+  console.log("cleaning orphans");
+  const { crypto, products } = state.get();
+  await order.cleanOrphans(crypto, products);
+
   console.log("Analyzing existing orders");
   const resells = await order.remargin(margin);
   console.log(`Remargined ${resells.length} orders`);

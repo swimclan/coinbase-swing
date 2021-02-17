@@ -38,11 +38,19 @@ function CoinbaseFactory(env) {
 }
 
 async function StateFactory({ publicClient, authClient }) {
-  let ret = { cash: 0, products: {} };
+  let ret = { cash: 0, products: {}, crpyto: {} };
   try {
     const products = await publicClient.getProducts();
     const account = await authClient.getAccount();
     const usdInstrument = account.find((inst) => inst.currency === "USD") || {};
+    ret.crypto = account
+      .filter((inst) => inst.currency !== "USD")
+      .reduce((acc, inst) => {
+        if (+inst.available > 0) {
+          return { ...acc, [inst.currency]: +inst.available };
+        }
+        return acc;
+      }, {});
     ret.cash = usdInstrument.available || 0;
     const targetProducts = products
       .map((p) => ({
@@ -141,6 +149,33 @@ function OrderFactory({ authClient, publicClient }) {
         console.error(err);
       }
       return ret;
+    },
+    async cleanOrphans(crypto, products) {
+      for (const [currency, amount] of Object.entries(crypto)) {
+        await wait(500);
+        const product_id = `${currency}-USD`;
+        const ticker = await publicClient.getProductTicker(product_id);
+        try {
+          if (+amount >= products[product_id].min) {
+            console.log(`Selling ${amount.toString()} orphaned ${currency}...`);
+            await this.sell({
+              price: +ticker.price,
+              size: +amount,
+              product_id,
+              margin: 0.001,
+            });
+          } else {
+            console.warn(
+              `Tried to clean orphaned for ${product_id} but amount was less than min size`
+            );
+          }
+        } catch (error) {
+          console.error(
+            `Something failed when cleaning orhpaned for ${product_id}`
+          );
+          console.log(error.data || error.message || error);
+        }
+      }
     },
     async cancel(id) {
       return await authClient.cancelOrder(id);
