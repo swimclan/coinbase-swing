@@ -10,6 +10,7 @@ const Clock = require("interval-clock");
 const wakeTime = process.argv[2];
 const fraction = +process.argv[3] || 0.75;
 const margin = +process.argv[4] || 0.01;
+const stopMargin = +process.argv[5] || 0.005;
 
 // Build Coinbase clients
 const { public: publicClient, auth: authClient } = CoinbaseFactory(process.env);
@@ -61,7 +62,7 @@ async function main() {
   await order.cleanOrphans(crypto, products);
 
   console.log("Analyzing existing orders");
-  const resells = await order.remargin(margin);
+  const resells = await order.remargin(margin, stopMargin);
   console.log(`Remargined ${resells.length} orders`);
 
   let buyOrder;

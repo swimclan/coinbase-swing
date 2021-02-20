@@ -122,7 +122,7 @@ function OrderFactory({ authClient, publicClient }) {
     async getAll() {
       return await authClient.getOrders();
     },
-    async remargin(margin) {
+    async remargin(margin, stopMargin) {
       let ret = [];
       try {
         const currentOrders = await authClient.getOrders();
@@ -131,18 +131,24 @@ function OrderFactory({ authClient, publicClient }) {
             currentOrder.product_id
           );
           await wait(500);
-          const diff = +currentOrder.price - +ticker.price;
-          const diffRate = diff / +currentOrder.price - margin;
-          if (diffRate > margin / 2) {
-            await authClient.cancelOrder(currentOrder.id);
-            const newSellOrder = await this.sell({
-              price: ticker.price,
-              size: +currentOrder.size,
-              product_id: currentOrder.product_id,
-              margin: 0.001,
-            });
-            ret.push(newSellOrder);
+          const currentLimitPrice = +currentOrder.price;
+          const currentTickerPrice = +ticker.price;
+          const lastPrice = currentLimitPrice / (1 + margin);
+          let newLimitPrice = currentLimitPrice;
+          if (currentTickerPrice > lastPrice) {
+            newLimitPrice = currentTickerPrice * (1 + margin);
           }
+          const stopPrice = lastPrice / (1 + stopMargin);
+          const shouldStop = currentTickerPrice <= stopPrice;
+
+          await authClient.cancelOrder(currentOrder.id);
+          const newSellOrder = await this.sell({
+            price: currentTickerPrice,
+            size: +currentOrder.size,
+            product_id: currentOrder.product_id,
+            margin: shouldStop ? 0.001 : margin,
+          });
+          ret.push(newSellOrder);
         }
       } catch (err) {
         console.error("Remargin failed");
