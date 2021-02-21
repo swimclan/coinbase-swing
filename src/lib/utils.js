@@ -2,28 +2,73 @@ function wait(time) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
 
-function sortByPercentChange(state) {
+function sortByMetric(state, metric) {
+  const metrics = {
+    change: 1,
+    volatility: 2,
+    changeVolatility: 3,
+  };
   const { products } = state;
   return {
     ...state,
     products: Object.entries(products)
-      .map(([prod, { price, change, min, inc }]) => {
-        return [prod, change, price, min, inc];
-      })
+      .map(
+        ([prod, { price, change, volatility, changeVolatility, min, inc }]) => {
+          return [prod, change, volatility, changeVolatility, price, min, inc];
+        }
+      )
       .sort((a, b) => {
-        if (a[1] < b[1]) {
+        if (a[metrics[metric]] < b[metrics[metric]]) {
           return -1;
-        } else if (a[1] > b[1]) {
+        } else if (a[metrics[metric]] > b[metrics[metric]]) {
           return 1;
         }
         return 0;
       })
-      .map(([id, change, price, min, inc]) => {
+      .map(([id, change, volatility, changeVolatility, price, min, inc]) => {
         return {
-          [id]: { price, change, min, inc },
+          [id]: { price, change, volatility, changeVolatility, min, inc },
         };
       }),
   };
+}
+
+function get24HourDateRange(now) {
+  const yesterday = new Date();
+  yesterday.setHours(now.getHours() - 24);
+  return [now, yesterday].map((d) => d.toISOString());
+}
+
+function sumArr(vals) {
+  return vals.reduce((acc, val) => {
+    return (acc += val);
+  }, 0);
+}
+
+function meanArr(vals) {
+  return sumArr(vals) / vals.length;
+}
+
+function getDeltaYs(vals) {
+  const mean = meanArr(vals);
+  return vals.map((y) => y - mean);
+}
+
+function calculateVariance(vals = []) {
+  if (vals.length === 0) {
+    return 0;
+  }
+  const deltaYs = getDeltaYs(vals);
+  const squaredErrorVals = squareArr(deltaYs);
+  return sumArr(squaredErrorVals) / vals.length;
+}
+
+function calculateVolatility(vals) {
+  return parseFloat(Math.sqrt(calculateVariance(vals)).toFixed(2));
+}
+
+function squareArr(vals) {
+  return vals.map((val) => Math.pow(val, 2));
 }
 
 function calcSize(price, cash, fraction) {
@@ -56,9 +101,16 @@ function calcLimitPrice(buyPrice, margin) {
 
 module.exports = {
   wait,
-  sortByPercentChange,
+  sortByMetric,
   calcSize,
   isValidSize,
   setSigDig,
   calcLimitPrice,
+  sumArr,
+  meanArr,
+  getDeltaYs,
+  squareArr,
+  calculateVariance,
+  calculateVolatility,
+  get24HourDateRange,
 };

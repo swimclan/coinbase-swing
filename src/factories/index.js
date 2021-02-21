@@ -6,6 +6,8 @@ const {
   setSigDig,
   calcSize,
   calcLimitPrice,
+  get24HourDateRange,
+  calculateVolatility,
 } = require("../lib/utils");
 
 const instances = {};
@@ -38,7 +40,7 @@ function CoinbaseFactory(env) {
 }
 
 async function StateFactory({ publicClient, authClient }) {
-  let ret = { cash: 0, products: {}, crpyto: {} };
+  let ret = { cash: 0, products: {}, crypto: {} };
   try {
     const products = await publicClient.getProducts();
     const account = await authClient.getAccount();
@@ -66,12 +68,24 @@ async function StateFactory({ publicClient, authClient }) {
       const { id, inc, min } = targetProduct;
       const stats = await publicClient.getProduct24HrStats(id);
       const ticker = await publicClient.getProductTicker(id);
+      const dateRange24hrs = get24HourDateRange(new Date());
+      const priceHistory = await publicClient.getProductHistoricRates(id, {
+        start: dateRange24hrs[1],
+        end: dateRange24hrs[0],
+        granularity: 900,
+      });
       await wait(500);
       const open = stats.open;
-      const price = ticker.price;
+      const price = +ticker.price;
+      const volatility =
+        calculateVolatility(priceHistory.map((ph) => ph[4])) / price;
+      const change = (price - open) / open;
+      const changeVolatility = change - volatility;
       ret.products[id] = {
         price,
-        change: (price - open) / open,
+        volatility,
+        change,
+        changeVolatility,
         min,
         inc,
       };

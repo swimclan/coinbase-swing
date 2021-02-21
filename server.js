@@ -4,7 +4,7 @@ const {
   StateFactory,
   OrderFactory,
 } = require("./src/factories/index");
-const { sortByPercentChange, wait } = require("./src/lib/utils");
+const { sortByMetric, wait } = require("./src/lib/utils");
 const Clock = require("interval-clock");
 
 const wakeTime = process.argv[2];
@@ -20,7 +20,7 @@ const interval = Clock(wakeTime || "20m");
 interval.on("tick", main);
 
 async function executeBuy(state, order) {
-  const sortedState = sortByPercentChange(state.get());
+  const sortedState = sortByMetric(state.get(), "changeVolatility");
   const productToBuy = sortedState.products[0];
 
   console.log(`Buying...`);
@@ -55,6 +55,8 @@ async function executeSell(buyOrder, order, margin) {
 async function main() {
   console.log("Fetching state");
   const state = await StateFactory({ publicClient, authClient });
+  console.log(state.get());
+  return;
   const order = OrderFactory({ authClient, publicClient });
 
   console.log("cleaning orphans");
