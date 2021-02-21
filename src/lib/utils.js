@@ -6,15 +6,36 @@ function sortByMetric(state, metric) {
   const metrics = {
     change: 1,
     volatility: 2,
-    changeVolatility: 3,
+    changeVolatilityVwapComposite: 3,
+    vwap: 4,
   };
   const { products } = state;
   return {
     ...state,
     products: Object.entries(products)
       .map(
-        ([prod, { price, change, volatility, changeVolatility, min, inc }]) => {
-          return [prod, change, volatility, changeVolatility, price, min, inc];
+        ([
+          prod,
+          {
+            price,
+            change,
+            volatility,
+            changeVolatilityVwapComposite,
+            vwap,
+            min,
+            inc,
+          },
+        ]) => {
+          return [
+            prod,
+            change,
+            volatility,
+            changeVolatilityVwapComposite,
+            vwap,
+            price,
+            min,
+            inc,
+          ];
         }
       )
       .sort((a, b) => {
@@ -25,11 +46,30 @@ function sortByMetric(state, metric) {
         }
         return 0;
       })
-      .map(([id, change, volatility, changeVolatility, price, min, inc]) => {
-        return {
-          [id]: { price, change, volatility, changeVolatility, min, inc },
-        };
-      }),
+      .map(
+        ([
+          id,
+          change,
+          volatility,
+          changeVolatilityVwapComposite,
+          vwap,
+          price,
+          min,
+          inc,
+        ]) => {
+          return {
+            [id]: {
+              price,
+              change,
+              volatility,
+              changeVolatilityVwapComposite,
+              vwap,
+              min,
+              inc,
+            },
+          };
+        }
+      ),
   };
 }
 
@@ -65,6 +105,15 @@ function calculateVariance(vals = []) {
 
 function calculateVolatility(vals) {
   return parseFloat(Math.sqrt(calculateVariance(vals)).toFixed(2));
+}
+
+function calculateVWAP(priceHistory) {
+  const pvs = sumArr(
+    priceHistory.map((ph) => meanArr([ph[1], ph[2], ph[4]]) * ph[5])
+  );
+
+  const vs = sumArr(priceHistory.map((ph) => ph[5]));
+  return parseFloat((pvs / vs).toFixed(2));
 }
 
 function squareArr(vals) {
@@ -113,4 +162,5 @@ module.exports = {
   calculateVariance,
   calculateVolatility,
   get24HourDateRange,
+  calculateVWAP,
 };

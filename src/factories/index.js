@@ -8,6 +8,7 @@ const {
   calcLimitPrice,
   get24HourDateRange,
   calculateVolatility,
+  calculateVWAP,
 } = require("../lib/utils");
 
 const instances = {};
@@ -68,24 +69,42 @@ async function StateFactory({ publicClient, authClient }) {
       const { id, inc, min } = targetProduct;
       const stats = await publicClient.getProduct24HrStats(id);
       const ticker = await publicClient.getProductTicker(id);
+
+      // Get price history for time series metrics
       const dateRange24hrs = get24HourDateRange(new Date());
       const priceHistory = await publicClient.getProductHistoricRates(id, {
         start: dateRange24hrs[1],
         end: dateRange24hrs[0],
         granularity: 900,
       });
+
       await wait(500);
+
+      // Compute percent change
       const open = stats.open;
       const price = +ticker.price;
+      const change = (price - open) / open;
+
+      // Compute volatility (sigma relative to price)
       const volatility =
         calculateVolatility(priceHistory.map((ph) => ph[4])) / price;
-      const change = (price - open) / open;
-      const changeVolatility = change - volatility;
+
+      // Compute VWAP
+      const vwap = calculateVWAP(priceHistory);
+
+      // Compute VWAP relative to price
+      const relativeVwap = (price - vwap) / vwap;
+
+      // Compute change-volatility-vwap weighted composite
+      const changeVolatilityVwapComposite =
+        change - volatility * 2 + relativeVwap * 3;
+
       ret.products[id] = {
         price,
         volatility,
         change,
-        changeVolatility,
+        changeVolatilityVwapComposite,
+        vwap,
         min,
         inc,
       };

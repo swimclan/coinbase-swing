@@ -11,6 +11,7 @@ const {
   calculateVariance,
   calculateVolatility,
   get24HourDateRange,
+  calculateVWAP,
 } = require("../utils");
 
 describe("utils", () => {
@@ -53,5 +54,13 @@ describe("utils", () => {
     expect(dateRange.length).toEqual(2);
     expect(parsedDates[0].getDate()).toEqual(new Date().getDate());
     expect(parsedDates[1].getDate()).toEqual(new Date().getDate() - 1);
+  });
+  test("calculateVWAP() will return the proper volume weighted price form an input of candles", () => {
+    const candles = [
+      [123, 9.0, 11.0, 10.0, 10.0, 100],
+      [123, 6.0, 10.0, 8.0, 8.0, 300],
+      [123, 10.0, 12.0, 11.0, 11.0, 200],
+    ];
+    expect(calculateVWAP(candles)).toEqual(9.33);
   });
 });

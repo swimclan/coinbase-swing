@@ -11,6 +11,7 @@ const wakeTime = process.argv[2];
 const fraction = +process.argv[3] || 0.75;
 const margin = +process.argv[4] || 0.01;
 const stopMargin = +process.argv[5] || 0.005;
+const strategy = process.argv[6] || "changeVolatilityVwapComposite";
 
 // Build Coinbase clients
 const { public: publicClient, auth: authClient } = CoinbaseFactory(process.env);
@@ -19,8 +20,8 @@ const { public: publicClient, auth: authClient } = CoinbaseFactory(process.env);
 const interval = Clock(wakeTime || "20m");
 interval.on("tick", main);
 
-async function executeBuy(state, order) {
-  const sortedState = sortByMetric(state.get(), "changeVolatility");
+async function executeBuy(state, order, fraction, strategy) {
+  const sortedState = sortByMetric(state.get(), strategy);
   const productToBuy = sortedState.products[0];
 
   console.log(`Buying...`);
@@ -67,7 +68,7 @@ async function main() {
 
   let buyOrder;
   try {
-    buyOrder = await executeBuy(state, order);
+    buyOrder = await executeBuy(state, order, fraction, strategy);
   } catch (err) {
     console.error(err);
     buyOrder = null;
