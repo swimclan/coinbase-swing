@@ -97,7 +97,7 @@ async function StateFactory({ publicClient, authClient }) {
 
       // Compute change-volatility-vwap weighted composite
       const changeVolatilityVwapComposite =
-        change - volatility * 2 + relativeVwap * 3;
+        0.5 * change - volatility * 2 + relativeVwap * 3;
 
       ret.products[id] = {
         price,
