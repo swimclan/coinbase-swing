@@ -166,25 +166,19 @@ function OrderFactory({ authClient, publicClient }) {
           await wait(500);
           const currentLimitPrice = +currentOrder.price;
           const currentTickerPrice = +ticker.price;
-          const lastPrice = currentLimitPrice / (1 + margin);
-          let raiseLimit = currentTickerPrice > lastPrice;
-          const stopPrice = lastPrice / (1 + stopMargin);
+          const originalPrice = currentLimitPrice / (1 + margin);
+          const stopPrice = originalPrice / (1 + stopMargin);
           const shouldStop = currentTickerPrice <= stopPrice;
-          const marginToUse = shouldStop ? 0.001 : raiseLimit ? margin : 0;
-          const newPrice = shouldStop
-            ? currentTickerPrice
-            : raiseLimit
-            ? currentTickerPrice
-            : currentLimitPrice;
-
-          await authClient.cancelOrder(currentOrder.id);
-          const newSellOrder = await this.sell({
-            price: newPrice,
-            size: +currentOrder.size,
-            product_id: currentOrder.product_id,
-            margin: marginToUse,
-          });
-          ret.push(newSellOrder);
+          if (shouldStop) {
+            await authClient.cancelOrder(currentOrder.id);
+            const newSellOrder = await this.sell({
+              price: currentTickerPrice,
+              size: +currentOrder.size,
+              product_id: currentOrder.product_id,
+              margin: 0.001,
+            });
+            ret.push(newSellOrder);
+          }
         }
       } catch (err) {
         console.error("Remargin failed");
