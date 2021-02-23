@@ -69,7 +69,9 @@ async function StateFactory({ publicClient, authClient, interval }) {
     for (const targetProduct of targetProducts) {
       const { id, inc, min } = targetProduct;
       const stats = await publicClient.getProduct24HrStats(id);
+      await wait(300);
       const ticker = await publicClient.getProductTicker(id);
+      await wait(300);
 
       // Get price history for time series metrics
       const period = convertTimeShortHandToMinutes(interval);
@@ -79,9 +81,7 @@ async function StateFactory({ publicClient, authClient, interval }) {
         end: historicTimeRange[0],
         granularity: 60,
       });
-
-      await wait(500);
-
+      await wait(300);
       // Compute percent change
       const open = stats.open;
       const price = +ticker.price;
