@@ -9,6 +9,7 @@ const {
   getTimeRange,
   calculateVolatility,
   calculateVWAP,
+  convertTimeShortHandToMinutes,
 } = require("../lib/utils");
 
 const instances = {};
