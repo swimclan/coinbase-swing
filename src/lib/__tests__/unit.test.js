@@ -10,8 +10,9 @@ const {
   sumArr,
   calculateVariance,
   calculateVolatility,
-  get24HourDateRange,
+  getTimeRange,
   calculateVWAP,
+  convertTimeShortHandToMinutes,
 } = require("../utils");
 
 describe("utils", () => {
@@ -48,12 +49,13 @@ describe("utils", () => {
   test("calculateVolatility() will return the standard deviation (volatility) of a list of values", () => {
     expect(calculateVolatility([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])).toEqual(2.87);
   });
-  test("get24HourDateRange() will return a 24-hour date range in ISO8601", () => {
-    const dateRange = get24HourDateRange(new Date());
+  test("getTimeRange() will return a 24-hour date range in ISO8601", () => {
+    const now = new Date();
+    const dateRange = getTimeRange(now, "Minutes", 30);
     const parsedDates = dateRange.map((dr) => new Date(dr));
     expect(dateRange.length).toEqual(2);
-    expect(parsedDates[0].getDate()).toEqual(new Date().getDate());
-    expect(parsedDates[1].getDate()).toEqual(new Date().getDate() - 1);
+    expect(parsedDates[0].getTime()).toEqual(now.getTime());
+    expect(parsedDates[1].getTime()).toEqual(now.getTime() - 1800000);
   });
   test("calculateVWAP() will return the proper volume weighted price form an input of candles", () => {
     const candles = [
@@ -62,5 +64,10 @@ describe("utils", () => {
       [123, 10.0, 12.0, 11.0, 11.0, 200],
     ];
     expect(calculateVWAP(candles)).toEqual(9.33);
+  });
+  test("convertTimeShortHandToMinutes() will return minute value for a given shorthand", () => {
+    expect(convertTimeShortHandToMinutes("5m")).toEqual(5);
+    expect(convertTimeShortHandToMinutes("2h")).toEqual(120);
+    expect(convertTimeShortHandToMinutes("45s")).toEqual(1);
   });
 });

@@ -73,10 +73,23 @@ function sortByMetric(state, metric) {
   };
 }
 
-function get24HourDateRange(now) {
+function getTimeRange(now, units, offset) {
   const yesterday = new Date();
-  yesterday.setHours(now.getHours() - 24);
+  yesterday[`set${units}`](now[`get${units}`]() - offset);
   return [now, yesterday].map((d) => d.toISOString());
+}
+
+function convertTimeShortHandToMinutes(shorthand) {
+  const unitFactors = {
+    s: 0,
+    m: 1,
+    h: 60,
+  };
+
+  const charSplit = shorthand.split("");
+  const unit = charSplit.pop();
+  const minutes = parseInt(charSplit.join("")) * unitFactors[unit];
+  return minutes || 1;
 }
 
 function sumArr(vals) {
@@ -161,6 +174,7 @@ module.exports = {
   squareArr,
   calculateVariance,
   calculateVolatility,
-  get24HourDateRange,
+  getTimeRange,
   calculateVWAP,
+  convertTimeShortHandToMinutes,
 };

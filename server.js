@@ -55,7 +55,11 @@ async function executeSell(buyOrder, order, margin) {
 // Main routine
 async function main() {
   console.log("Fetching state");
-  const state = await StateFactory({ publicClient, authClient });
+  const state = await StateFactory({
+    publicClient,
+    authClient,
+    interval: wakeTime,
+  });
   const order = OrderFactory({ authClient, publicClient });
 
   console.log("cleaning orphans");

@@ -6,7 +6,7 @@ const {
   setSigDig,
   calcSize,
   calcLimitPrice,
-  get24HourDateRange,
+  getTimeRange,
   calculateVolatility,
   calculateVWAP,
 } = require("../lib/utils");
@@ -40,7 +40,7 @@ function CoinbaseFactory(env) {
   return instances.coinbase;
 }
 
-async function StateFactory({ publicClient, authClient }) {
+async function StateFactory({ publicClient, authClient, interval }) {
   let ret = { cash: 0, products: {}, crypto: {} };
   try {
     const products = await publicClient.getProducts();
@@ -71,11 +71,12 @@ async function StateFactory({ publicClient, authClient }) {
       const ticker = await publicClient.getProductTicker(id);
 
       // Get price history for time series metrics
-      const dateRange24hrs = get24HourDateRange(new Date());
+      const period = convertTimeShortHandToMinutes(interval);
+      const historicTimeRange = getTimeRange(new Date(), "Minutes", period);
       const priceHistory = await publicClient.getProductHistoricRates(id, {
-        start: dateRange24hrs[1],
-        end: dateRange24hrs[0],
-        granularity: 900,
+        start: historicTimeRange[1],
+        end: historicTimeRange[0],
+        granularity: 60,
       });
 
       await wait(500);
