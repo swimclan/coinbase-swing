@@ -116,9 +116,8 @@ async function StateFactory({ publicClient, authClient, interval }) {
       // Compute slope relative to price
       const relativeSlope = slope / price;
 
-      // Compute change-volatility-vwap-slope weighted composite
-      const compositeScore =
-        0.5 * change - volatility * 2 + relativeVwap * 3 - relativeSlope * 100;
+      // Compute vwap-slope weighted composite
+      const compositeScore = relativeVwap - relativeSlope * 10;
 
       ret.products[id] = {
         price,
