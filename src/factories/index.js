@@ -1,5 +1,6 @@
 const CoinbasePro = require("coinbase-pro");
 const { exchange } = require("../lib/constants");
+const regression = require("regression");
 const {
   wait,
   isValidSize,
@@ -76,20 +77,35 @@ async function StateFactory({ publicClient, authClient, interval }) {
       // Get price history for time series metrics
       const period = convertTimeShortHandToMinutes(interval);
       const historicTimeRange = getTimeRange(new Date(), "Minutes", period);
-      const priceHistory = await publicClient.getProductHistoricRates(id, {
-        start: historicTimeRange[1],
-        end: historicTimeRange[0],
-        granularity: 60,
-      });
-      await wait(300);
+
+      let priceHistory = [];
+      while (!priceHistory.length) {
+        try {
+          priceHistory = await publicClient.getProductHistoricRates(id, {
+            start: historicTimeRange[1],
+            end: historicTimeRange[0],
+            granularity: 60,
+          });
+        } catch (err) {
+          console.log("priceHistory failed");
+          console.error(err.data || err.message || err);
+        }
+        await wait(300);
+      }
       // Compute percent change
       const open = stats.open;
       const price = +ticker.price;
       const change = (price - open) / open;
 
+      const closes = priceHistory.map((ph) => ph[4]);
+
       // Compute volatility (sigma relative to price)
-      const volatility =
-        calculateVolatility(priceHistory.map((ph) => ph[4])) / price;
+      const volatility = calculateVolatility(closes) / price;
+
+      // Compute the linear least squares regression for the last 5 candles
+      const points = closes.slice(-5).map((close, i) => [i + 1, close]);
+      const { equation } = regression.linear(points, { precision: 8 });
+      const slope = equation[0];
 
       // Compute VWAP
       const vwap = calculateVWAP(priceHistory);
@@ -97,16 +113,20 @@ async function StateFactory({ publicClient, authClient, interval }) {
       // Compute VWAP relative to price
       const relativeVwap = (price - vwap) / vwap;
 
-      // Compute change-volatility-vwap weighted composite
-      const changeVolatilityVwapComposite =
-        0.5 * change - volatility * 2 + relativeVwap * 3;
+      // Compute slope relative to price
+      const relativeSlope = slope / price;
+
+      // Compute change-volatility-vwap-slope weighted composite
+      const compositeScore =
+        0.5 * change - volatility * 2 + relativeVwap * 3 - relativeSlope * 100;
 
       ret.products[id] = {
         price,
         volatility,
         change,
-        changeVolatilityVwapComposite,
+        compositeScore,
         vwap,
+        slope,
         min,
         inc,
       };

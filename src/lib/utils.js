@@ -6,8 +6,9 @@ function sortByMetric(state, metric) {
   const metrics = {
     change: 1,
     volatility: 2,
-    changeVolatilityVwapComposite: 3,
+    compositeScore: 3,
     vwap: 4,
+    slope: 5,
   };
   const { products } = state;
   return {
@@ -16,22 +17,15 @@ function sortByMetric(state, metric) {
       .map(
         ([
           prod,
-          {
-            price,
-            change,
-            volatility,
-            changeVolatilityVwapComposite,
-            vwap,
-            min,
-            inc,
-          },
+          { price, change, volatility, compositeScore, vwap, slope, min, inc },
         ]) => {
           return [
             prod,
             change,
             volatility,
-            changeVolatilityVwapComposite,
+            compositeScore,
             vwap,
+            slope,
             price,
             min,
             inc,
@@ -51,8 +45,9 @@ function sortByMetric(state, metric) {
           id,
           change,
           volatility,
-          changeVolatilityVwapComposite,
+          compositeScore,
           vwap,
+          slope,
           price,
           min,
           inc,
@@ -62,8 +57,9 @@ function sortByMetric(state, metric) {
               price,
               change,
               volatility,
-              changeVolatilityVwapComposite,
+              compositeScore,
               vwap,
+              slope,
               min,
               inc,
             },
