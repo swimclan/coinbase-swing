@@ -103,7 +103,7 @@ async function StateFactory({ publicClient, authClient, interval }) {
       const volatility = calculateVolatility(closes) / price;
 
       // Compute the linear least squares regression for the last 5 candles
-      const points = closes.slice(-5).map((close, i) => [i + 1, close]);
+      const points = closes.map((close, i) => [i + 1, close]);
       const { equation } = regression.linear(points, { precision: 8 });
       const slope = equation[0];
 
