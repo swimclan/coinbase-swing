@@ -105,7 +105,7 @@ async function StateFactory({ publicClient, authClient, interval }) {
       // Compute the linear least squares regression for the last 5 candles
       const points = closes.map((close, i) => [i + 1, close]);
       const { equation } = regression.linear(points, { precision: 8 });
-      const slope = equation[0];
+      const slope = -equation[0];
 
       // Compute VWAP
       const vwap = calculateVWAP(priceHistory);
@@ -124,8 +124,8 @@ async function StateFactory({ publicClient, authClient, interval }) {
         volatility,
         change,
         compositeScore,
-        vwap,
-        slope,
+        vwap: relativeVwap,
+        slope: relativeSlope,
         min,
         inc,
       };

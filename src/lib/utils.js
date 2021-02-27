@@ -70,9 +70,9 @@ function sortByMetric(state, metric) {
 }
 
 function getTimeRange(now, units, offset) {
-  const yesterday = new Date();
-  yesterday[`set${units}`](now[`get${units}`]() - offset);
-  return [now, yesterday].map((d) => d.toISOString());
+  const before = new Date();
+  before[`set${units}`](now[`get${units}`]() - offset);
+  return [now, before].map((d) => d.toISOString());
 }
 
 function convertTimeShortHandToMinutes(shorthand) {
