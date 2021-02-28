@@ -11,7 +11,7 @@ const wakeTime = process.argv[2] || "20m";
 const fraction = +process.argv[3] || 0.75;
 const margin = +process.argv[4] || 0.01;
 const stopMargin = +process.argv[5] || 0.005;
-const strategy = process.argv[6] || "change";
+const strategy = process.argv[6] || "compositeScore";
 
 // Build Coinbase clients
 const { public: publicClient, auth: authClient } = CoinbaseFactory(process.env);

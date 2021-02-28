@@ -74,9 +74,9 @@ async function StateFactory({ publicClient, authClient, interval }) {
       const ticker = await publicClient.getProductTicker(id);
       await wait(300);
 
-      // Get price history for time series metrics
+      // Get price history for time series metrics for 6x the interval of the trade system
       const period = convertTimeShortHandToMinutes(interval);
-      const historicTimeRange = getTimeRange(new Date(), "Minutes", period);
+      const historicTimeRange = getTimeRange(new Date(), "Minutes", period * 6);
 
       let priceHistory = [];
       while (!priceHistory.length) {
@@ -117,7 +117,7 @@ async function StateFactory({ publicClient, authClient, interval }) {
       const relativeSlope = slope / price;
 
       // Compute vwap-slope weighted composite
-      const compositeScore = relativeVwap - relativeSlope * 10;
+      const compositeScore = relativeVwap - relativeSlope * 5;
 
       ret.products[id] = {
         price,
