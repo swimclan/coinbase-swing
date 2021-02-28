@@ -1,4 +1,5 @@
 const CoinbasePro = require("coinbase-pro");
+const _reverse = require("lodash/reverse");
 const { exchange } = require("../lib/constants");
 const regression = require("regression");
 const {
@@ -74,18 +75,20 @@ async function StateFactory({ publicClient, authClient, interval }) {
       const ticker = await publicClient.getProductTicker(id);
       await wait(300);
 
-      // Get price history for time series metrics for 6x the interval of the trade system
+      // Get price history for time series metrics for 3x the interval of the trade system
       const period = convertTimeShortHandToMinutes(interval);
-      const historicTimeRange = getTimeRange(new Date(), "Minutes", period * 6);
+      const historicTimeRange = getTimeRange(new Date(), "Minutes", period * 3);
 
       let priceHistory = [];
       while (!priceHistory.length) {
         try {
-          priceHistory = await publicClient.getProductHistoricRates(id, {
-            start: historicTimeRange[1],
-            end: historicTimeRange[0],
-            granularity: 60,
-          });
+          priceHistory = _reverse(
+            await publicClient.getProductHistoricRates(id, {
+              start: historicTimeRange[1],
+              end: historicTimeRange[0],
+              granularity: 60,
+            })
+          );
         } catch (err) {
           console.log("priceHistory failed");
           console.error(err.data || err.message || err);
@@ -102,19 +105,26 @@ async function StateFactory({ publicClient, authClient, interval }) {
       // Compute volatility (sigma relative to price)
       const volatility = calculateVolatility(closes) / price;
 
-      // Compute the linear least squares regression for the last 5 candles
+      // Compute the linear least squares regression for long and short terms
       const points = closes.map((close, i) => [i + 1, close]);
-      const { equation } = regression.linear(points, { precision: 8 });
-      const slope = -equation[0];
+      const { equation: longEq } = regression.linear(points, { precision: 8 });
+      const slope = longEq[0];
+      const { equation: shortEq } = regression.linear(points.slice(-period), {
+        precision: 8,
+      });
+      const shortSlope = shortEq[0];
 
       // Compute VWAP
       const vwap = calculateVWAP(priceHistory);
+      const shortVwap = calculateVWAP(priceHistory.slice(-period));
 
       // Compute VWAP relative to price
       const relativeVwap = (price - vwap) / vwap;
+      const relativeShortVwap = (price - shortVwap) / shortVwap;
 
       // Compute slope relative to price
       const relativeSlope = slope / price;
+      const relativeShortSlope = shortSlope / price;
 
       // Compute vwap-slope weighted composite
       const compositeScore = relativeVwap - relativeSlope * 5;
@@ -125,7 +135,9 @@ async function StateFactory({ publicClient, authClient, interval }) {
         change,
         compositeScore,
         vwap: relativeVwap,
+        shortVwap: relativeShortVwap,
         slope: relativeSlope,
+        shortSlope: relativeShortSlope,
         min,
         inc,
       };
