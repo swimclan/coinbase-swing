@@ -2,6 +2,7 @@ require("dotenv").config();
 const {
   CoinbaseFactory,
   StateFactory,
+  OrderFactory,
   PortfolioFactory,
 } = require("./src/factories/index");
 const { sortByMetric, wait } = require("./src/lib/utils");
