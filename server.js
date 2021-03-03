@@ -2,7 +2,7 @@ require("dotenv").config();
 const {
   CoinbaseFactory,
   StateFactory,
-  OrderFactory,
+  PortfolioFactory,
 } = require("./src/factories/index");
 const { sortByMetric, wait } = require("./src/lib/utils");
 const Clock = require("interval-clock");
@@ -11,14 +11,28 @@ const wakeTime = process.argv[2] || "20m";
 const fraction = +process.argv[3] || 0.75;
 const margin = +process.argv[4] || 0.01;
 const stopMargin = +process.argv[5] || 0.005;
-const strategy = process.argv[6] || "volatility";
+const walkAway = +process.argv[6] || 0.03;
+const strategy = process.argv[7] || "volatility";
 
 // Build Coinbase clients
 const { public: publicClient, auth: authClient } = CoinbaseFactory(process.env);
 
+// Build portfolio tracker
+const portfolio = PortfolioFactory();
+
 // Set clock
 const interval = Clock(wakeTime || "20m");
-interval.on("tick", main);
+interval.on("tick", () => {
+  if (!portfolio.isFrozen()) {
+    main();
+  } else {
+    console.log("Walked away.  Waiting for tomorrow");
+  }
+});
+
+// Set 24 hour clock for reseting portfolio tracking
+const dailyClock = Clock("24h");
+dailyClock.on("tick", portfolio.reset);
 
 async function executeBuy(state, order, fraction, strategy) {
   const sortedState = sortByMetric(state.get(), strategy);
@@ -72,8 +86,17 @@ async function main() {
     publicClient,
     authClient,
     interval: wakeTime,
+    portfolio,
   });
   const order = OrderFactory({ authClient, publicClient });
+
+  // Walk away?
+  const currentGain = portfolio.getGain();
+  if (currentGain >= walkAway) {
+    portfolio.freeze();
+    await order.remargin(margin, stopMargin, true);
+    return;
+  }
 
   console.log("cleaning orphans");
   const { crypto, products } = state.get();

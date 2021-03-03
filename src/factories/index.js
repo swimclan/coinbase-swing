@@ -43,11 +43,69 @@ function CoinbaseFactory(env) {
   return instances.coinbase;
 }
 
-async function StateFactory({ publicClient, authClient, interval }) {
+function PortfolioFactory() {
+  let gain = 0;
+  let value = 0;
+  let balances = {};
+  let prices = {};
+  let freeze = false;
+
+  return {
+    setBalances(account) {
+      balances = account.reduce((acc, inst) => {
+        return {
+          ...acc,
+          [inst.currency]: +inst.balance,
+        };
+      }, {});
+    },
+    setTickerPrice(id, ticker) {
+      prices[id.split("-")[0]] = +ticker.price;
+    },
+    getPrices() {
+      return prices;
+    },
+    getBalances() {
+      return balances;
+    },
+    reset() {
+      gain = 0;
+      freeze = false;
+    },
+    compute() {
+      const newValue =
+        Object.entries(prices).reduce((acc, [curr, price]) => {
+          if (balances[curr] && balances[curr] > 0) {
+            acc += balances[curr] * price;
+          }
+          return acc;
+        }, 0) + (balances["USD"] || 0);
+      if (value > 0) {
+        gain = (newValue - value) / value;
+        value = newValue;
+      }
+    },
+    getValue() {
+      return value;
+    },
+    getGain() {
+      return gain;
+    },
+    freeze() {
+      freeze = true;
+    },
+    isFrozen() {
+      return freeze;
+    },
+  };
+}
+
+async function StateFactory({ publicClient, authClient, interval, portfolio }) {
   let ret = { cash: 0, products: {}, crypto: {} };
   try {
     const products = await publicClient.getProducts();
     const account = await authClient.getAccount();
+    portfolio.setBalances(account);
     const usdInstrument = account.find((inst) => inst.currency === "USD") || {};
     ret.crypto = account
       .filter((inst) => inst.currency !== "USD")
@@ -73,6 +131,7 @@ async function StateFactory({ publicClient, authClient, interval }) {
       const stats = await publicClient.getProduct24HrStats(id);
       await wait(300);
       const ticker = await publicClient.getProductTicker(id);
+      portfolio.setTickerPrice(id, ticker);
       await wait(300);
 
       // Get price history for time series metrics for 3x the interval of the trade system
@@ -148,6 +207,8 @@ async function StateFactory({ publicClient, authClient, interval }) {
       console.log(error.message || error.data || error.body);
   }
 
+  portfolio.compute();
+
   return {
     get() {
       return ret;
@@ -188,7 +249,7 @@ function OrderFactory({ authClient, publicClient }) {
     async getAll() {
       return await authClient.getOrders();
     },
-    async remargin(margin, stopMargin) {
+    async remargin(margin, stopMargin, force = false) {
       let ret = [];
       try {
         const currentOrders = await authClient.getOrders();
@@ -201,7 +262,7 @@ function OrderFactory({ authClient, publicClient }) {
           const currentTickerPrice = +ticker.price;
           const originalPrice = currentLimitPrice / (1 + margin);
           const stopPrice = originalPrice / (1 + stopMargin);
-          const shouldStop = currentTickerPrice <= stopPrice;
+          const shouldStop = force || currentTickerPrice <= stopPrice;
           if (shouldStop) {
             await authClient.cancelOrder(currentOrder.id);
             const newSellOrder = await this.sell({
@@ -256,4 +317,5 @@ module.exports = {
   CoinbaseFactory,
   StateFactory,
   OrderFactory,
+  PortfolioFactory,
 };
