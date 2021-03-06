@@ -45,7 +45,7 @@ function CoinbaseFactory(env) {
 
 function PortfolioFactory() {
   let gain = 0;
-  let value = 0;
+  let initialValue = 0;
   let balances = {};
   let prices = {};
   let freeze = false;
@@ -70,6 +70,7 @@ function PortfolioFactory() {
     },
     reset() {
       gain = 0;
+      initialValue = 0;
       freeze = false;
     },
     compute() {
@@ -80,13 +81,11 @@ function PortfolioFactory() {
           }
           return acc;
         }, 0) + (balances["USD"] || 0);
-      if (value > 0) {
-        gain = (newValue - value) / value;
-        value = newValue;
+      if (initialValue === 0) {
+        initialValue = newValue;
+      } else {
+        gain = (newValue - initialValue) / initialValue;
       }
-    },
-    getValue() {
-      return value;
     },
     getGain() {
       return gain;
