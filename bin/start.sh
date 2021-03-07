@@ -1,3 +1,2 @@
 #!/bin/bash
-node server.js &
-nginx
+node server.js & nginx

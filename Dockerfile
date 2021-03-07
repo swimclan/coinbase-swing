@@ -21,5 +21,5 @@ RUN npm i
 
 RUN nginx -t
 
-CMD ./bin/start.sh
+CMD ["node", "server.js", "&", "nginx"]
 
