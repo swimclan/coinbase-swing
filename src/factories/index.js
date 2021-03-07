@@ -133,9 +133,9 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
       portfolio.setTickerPrice(id, ticker);
       await wait(300);
 
-      // Get price history for time series metrics for 3x the interval of the trade system
+      // Get price history for time series metrics for 5x the interval of the trade system
       const period = convertTimeShortHandToMinutes(interval);
-      const historicTimeRange = getTimeRange(new Date(), "Minutes", period * 3);
+      const historicTimeRange = getTimeRange(new Date(), "Minutes", period * 5);
 
       let priceHistory = [];
       while (!priceHistory.length) {
