@@ -2,6 +2,33 @@ function wait(time) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
 
+function returnConfig(
+  res,
+  {
+    wakeTime,
+    fraction,
+    margin,
+    stopMargin,
+    walkAway,
+    strategy,
+    isTesting,
+    maxVwap,
+    minSlope,
+  }
+) {
+  return res.status(200).json({
+    wakeTime,
+    fraction,
+    margin,
+    maxVwap,
+    minSlope,
+    stopMargin,
+    walkAway,
+    strategy,
+    isTesting,
+  });
+}
+
 function sortByMetric(state, metric) {
   const metrics = {
     change: 1,
@@ -192,4 +219,5 @@ module.exports = {
   getTimeRange,
   calculateVWAP,
   convertTimeShortHandToMinutes,
+  returnConfig,
 };

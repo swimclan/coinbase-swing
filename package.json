@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/swimclan/coinbase-swing#readme",
   "dependencies": {
+    "body-parser": "^1.19.0",
     "coinbase-pro": "^0.9.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",

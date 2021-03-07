@@ -1,3 +1,6 @@
+const express = require("express");
+const bodyParser = require("body-parser");
+const isEmpty = require("lodash/isEmpty");
 require("dotenv").config();
 const {
   CoinbaseFactory,
@@ -5,15 +8,25 @@ const {
   OrderFactory,
   PortfolioFactory,
 } = require("./src/factories/index");
-const { sortByMetric, wait } = require("./src/lib/utils");
+const { sortByMetric, wait, returnConfig } = require("./src/lib/utils");
 const Clock = require("interval-clock");
 
-const wakeTime = process.argv[2] || "20m";
-const fraction = +process.argv[3] || 0.75;
-const margin = +process.argv[4] || 0.01;
-const stopMargin = +process.argv[5] || 0.005;
-const walkAway = +process.argv[6] || 0.03;
-const strategy = process.argv[7] || "volatility";
+const app = express();
+app.use(bodyParser.json());
+
+// CONFIG
+let wakeTime = process.argv[2] || "24h";
+let fraction = +process.argv[3] || 0.75;
+let margin = +process.argv[4] || 0.01;
+let stopMargin = +process.argv[5] || 0.005;
+let walkAway = +process.argv[6] || 0.03;
+let strategy = process.argv[7] || "change";
+let maxVwap = +process.argv[8] || 0.001;
+let minSlope = +process.argv[9] || 0.001;
+let isTesting = process.argv[8] === "test" || true;
+
+let lastState = {};
+let testing = isTesting;
 
 // Build Coinbase clients
 const { public: publicClient, auth: authClient } = CoinbaseFactory(process.env);
@@ -22,7 +35,7 @@ const { public: publicClient, auth: authClient } = CoinbaseFactory(process.env);
 const portfolio = PortfolioFactory();
 
 // Set clock
-const interval = Clock(wakeTime || "20m");
+const interval = Clock(wakeTime);
 interval.on("tick", () => {
   if (!portfolio.isFrozen()) {
     main();
@@ -40,12 +53,13 @@ async function executeBuy(state, order, fraction, strategy) {
   const eligibleProducts = sortedState.products.filter((prod) => {
     const stats = Object.values(prod)[0];
     return (
-      stats.vwap < -0.001 &&
-      stats.slope > 0.001 &&
-      stats.shortVwap < -0.005 &&
-      stats.shortSlope > 0.005
+      stats.vwap < maxVwap &&
+      stats.slope > minSlope &&
+      stats.shortVwap < maxVwap &&
+      stats.shortSlope > minSlope
     );
   });
+
   if (!eligibleProducts.length) {
     console.log("Nothing looks good...  Try again later");
     return null;
@@ -99,8 +113,16 @@ async function main() {
     return;
   }
 
+  // Assign latest state to global lastState for api retrieval
+  lastState = state.get();
+
+  if (testing) {
+    console.info("System is testing. No market operations will commence...");
+    return;
+  }
+  const { crypto, products } = lastState;
+
   console.log("cleaning orphans");
-  const { crypto, products } = state.get();
   await order.cleanOrphans(crypto, products);
 
   console.log("Analyzing existing orders");
@@ -133,3 +155,72 @@ async function main() {
   sellOrder && console.log("Sold...");
   sellOrder && console.log(sellOrder);
 }
+
+app.get("/state", (req, res, next) => {
+  if (isEmpty(lastState)) {
+    return res.status(200).json(lastState);
+  }
+  return res.status(200).json(sortByMetric(lastState, strategy));
+});
+
+app.get("/config", (req, res, next) => {
+  return returnConfig(res, {
+    wakeTime,
+    fraction,
+    margin,
+    stopMargin,
+    walkAway,
+    strategy,
+    isTesting,
+    maxVwap,
+    minSlope,
+  });
+});
+
+app.get("/portfolio", (req, res, next) => {
+  return res.status(200).json({
+    balances: portfolio.getBalances(),
+    prices: portfolio.getPrices(),
+    gain: portfolio.getGain(),
+  });
+});
+
+app.post("/config", (req, res, next) => {
+  const {
+    wakeTime: wt,
+    fraction: f,
+    margin: m,
+    stopMargin: sm,
+    walkAway: wa,
+    strategy: s,
+    isTesting: it,
+    maxVwap: mv,
+    minSlope: ms,
+  } = req.body;
+
+  wt && (wakeTime = wt);
+  f && (fraction = f);
+  m && (margin = m);
+  sm && (stopMargin = sm);
+  wa && (walkAway = wa);
+  s && (strategy = s);
+  it && (isTesting = it);
+  mv && (maxVwap = mv);
+  ms && (minSlope = ms);
+
+  return returnConfig(res, {
+    wakeTime,
+    fraction,
+    margin,
+    stopMargin,
+    walkAway,
+    strategy,
+    isTesting,
+    maxVwap,
+    minSlope,
+  });
+});
+
+app.listen(process.env.NODE_PORT, () => {
+  console.info(`App server running on port ${process.env.NODE_PORT}`);
+});
