@@ -1,3 +1,3 @@
 #!/bin/bash
-node server.js
+node server.js &
 nginx -g, daemon off;
