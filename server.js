@@ -40,10 +40,10 @@ async function executeBuy(state, order, fraction, strategy) {
   const eligibleProducts = sortedState.products.filter((prod) => {
     const stats = Object.values(prod)[0];
     return (
-      stats.vwap < -0.005 &&
-      stats.slope > 0.005 &&
-      stats.shortVwap < -0.01 &&
-      stats.shortSlope > 0.01
+      stats.vwap < -0.01 &&
+      stats.slope > 0.01 &&
+      stats.shortVwap < -0.005 &&
+      stats.shortSlope > 0.005
     );
   });
   if (!eligibleProducts.length) {
