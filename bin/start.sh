@@ -27,7 +27,7 @@ docker build -f Dockerfile.nginx -t coinbase-swing-nginx:latest .
 docker build -f Dockerfile.node -t coinbase-swing-node:latest .
 
 echo Running containers
-docker run -d --name coinbase-swing-node --network swing-net -p 3333:3333 coinbase-swing-node:latest
+docker run -d --name coinbase-swing-node --network swing-net coinbase-swing-node:latest
 docker run -d --name coinbase-swing-nginx --network swing-net -p 80:80 coinbase-swing-nginx:latest
 
 # echo Connecting to network...
