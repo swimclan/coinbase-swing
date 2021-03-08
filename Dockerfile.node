@@ -1,0 +1,10 @@
+FROM mhart/alpine-node
+
+# Install bash
+RUN apk update && apk add bash
+
+WORKDIR /opt/app/coinbase-swing
+COPY . .
+RUN npm i
+
+CMD ["node", "server.js"]
