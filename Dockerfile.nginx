@@ -9,8 +9,8 @@ WORKDIR /etc/nginx
 #     ln -sf /dev/stderr /var/log/nginx/error.log
 
 COPY nginx/ /etc/nginx
-RUN mkdir /usr/public/www
-COPY ui/ /usr/public/www
+RUN mkdir /www
+COPY ui/ /www
 
 RUN nginx -t
 
