@@ -1,8 +1,8 @@
 #!/bin/bash
 
 echo Disconnecting from network...
-docker disconnect coinbase-swing-node swing-net
-docker disconnect coinbase-swing-nginx swing-net
+docker network disconnect coinbase-swing-node swing-net
+docker network disconnect coinbase-swing-nginx swing-net
 
 echo Removing network...
 docker network rm swing-net
