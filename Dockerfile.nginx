@@ -12,7 +12,7 @@ COPY nginx/ /etc/nginx
 RUN mkdir /www
 COPY ui/ /www
 
-RUN nginx -t
+# RUN nginx -t
 
 EXPOSE 80
 
