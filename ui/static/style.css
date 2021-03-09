@@ -126,12 +126,12 @@ label[for="strategy"] {
 span.label-text {
   text-align: right;
   padding-right: 0.3rem;
-  width: 38%;
+  width: 37%;
   font-size: 0.9rem;
 }
 
 span.display-value {
-  width: 22%;
+  width: 23%;
   font-size: 0.9rem;
   padding-left: 0.3rem;
 }
