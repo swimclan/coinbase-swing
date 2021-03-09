@@ -21,12 +21,11 @@ let margin = +process.argv[4] || 0.01;
 let stopMargin = +process.argv[5] || 0.005;
 let walkAway = +process.argv[6] || 0.03;
 let strategy = process.argv[7] || "change";
-let maxVwap = +process.argv[8] || 0.001;
+let maxVwap = +process.argv[8] || -0.001;
 let minSlope = +process.argv[9] || 0.001;
 let isTesting = process.argv[8] === "test" || true;
 
 let lastState = {};
-let testing = isTesting;
 
 // Build Coinbase clients
 const { public: publicClient, auth: authClient } = CoinbaseFactory(process.env);
@@ -34,15 +33,21 @@ const { public: publicClient, auth: authClient } = CoinbaseFactory(process.env);
 // Build portfolio tracker
 const portfolio = PortfolioFactory();
 
-// Set clock
-const interval = Clock(wakeTime);
-interval.on("tick", () => {
-  if (!portfolio.isFrozen()) {
-    main();
-  } else {
-    console.log("Walked away.  Waiting for tomorrow");
+// Set initial clock
+let interval;
+function setClock() {
+  if (interval) {
+    interval.removeAllListeners();
   }
-});
+  interval = Clock(wakeTime);
+  interval.on("tick", () => {
+    if (!portfolio.isFrozen()) {
+      main();
+    } else {
+      console.log("Walked away.  Waiting for tomorrow");
+    }
+  });
+}
 
 // Set 24 hour clock for reseting portfolio tracking
 const dailyClock = Clock("24h");
@@ -116,7 +121,7 @@ async function main() {
   // Assign latest state to global lastState for api retrieval
   lastState = state.get();
 
-  if (testing) {
+  if (isTesting) {
     console.info("System is testing. No market operations will commence...");
     return;
   }
@@ -204,9 +209,11 @@ app.post("/config", (req, res, next) => {
   sm && (stopMargin = sm);
   wa && (walkAway = wa);
   s && (strategy = s);
-  it && (isTesting = it);
+  isTesting = !!it;
   mv && (maxVwap = mv);
   ms && (minSlope = ms);
+
+  setClock();
 
   return returnConfig(res, {
     wakeTime,

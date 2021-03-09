@@ -42,6 +42,13 @@
     <link rel="stylesheet" href="static/reset.css" />
     <link rel="stylesheet" href="static/style.css" />
 
+    <!-- Google font-->
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@100&display=swap"
+      rel="stylesheet"
+    />
+
     <!-- Lea Verou's prefixfree (http://leaverou.github.io/prefixfree/), lets you use un-prefixed properties in your CSS files -->
     <script src="js/libs/prefixfree.min.js"></script>
 
@@ -52,9 +59,106 @@
 
   <body>
     <div class="wrapper">
-      <header>Coinbase swing</header>
+      <header>
+        <h3>Coinbase swing</h3>
+        <button id="apply" class="apply-button">Apply</button>
+      </header>
 
-      <section class="main-body">Hello from the world of Crypto</section>
+      <section class="main-body">
+        <h4 class="subhead">Trading parameters</h4>
+        <div class="input-wrapper" id="strategy">
+          <label for="strategy">
+            <span class="label-text">Strategy</span>
+            <select name="strategy">
+              <option value="change">24 hour low</option>
+              <option value="volatility">High volatility</option>
+              <option value="shortVwap">Short VWAP</option>
+              <option value="vwap">Long VWAP</option>
+              <option value="shortSlope">Short slope</option>
+              <option value="slope">Long slope</option>
+              <option value="compositeScore">VWAP/slope composite</option>
+            </select>
+            <span class="display-value">
+              <span class="value" style="display: none">change</span>
+            </span>
+          </label>
+        </div>
+        <div class="input-wrapper" id="wakeTime">
+          <label for="wakeTime">
+            <span class="label-text">Wake time (min)</span>
+            <input type="range" min="2" max="60" step="1" />
+            <span class="display-value">
+              <span class="value">25</span>
+              <span class="unit">m</span>
+            </span>
+          </label>
+        </div>
+        <div class="input-wrapper" id="fraction">
+          <label for="fraction">
+            <span class="label-text">Account fraction (%)</span>
+            <input type="range" min="10" max="90" step="5" />
+            <span class="display-value">
+              <span class="value">25</span>
+              <span class="unit">%</span>
+            </span>
+          </label>
+        </div>
+        <div class="input-wrapper" id="margin">
+          <label for="margin">
+            <span class="label-text">Profit margin (%)</span>
+            <input type="range" min="0" max="20" step="0.5" />
+            <span class="display-value">
+              <span class="value">2</span>
+              <span class="unit">%</span>
+            </span>
+          </label>
+        </div>
+        <div class="input-wrapper" id="stopMargin">
+          <label for="stopMargin">
+            <span class="label-text">Stop loss (%)</span>
+            <input type="range" min="0" max="10" step="0.5" />
+            <span class="display-value">
+              <span class="value">2</span>
+              <span class="unit">%</span>
+            </span>
+          </label>
+        </div>
+        <div class="input-wrapper" id="walkAway">
+          <label for="walkAway">
+            <span class="label-text">Walk away (%)</span>
+            <input type="range" min="1" max="100" step="1" />
+            <span class="display-value">
+              <span class="value">40</span>
+              <span class="unit">%</span>
+            </span>
+          </label>
+        </div>
+        <div class="input-wrapper" id="maxVwap">
+          <label for="maxVwap">
+            <span class="label-text">Max VWAP (%)</span>
+            <input type="range" min="-0.2" max="0" step="0.01" />
+            <span class="display-value">
+              <span class="value">-0.5</span>
+              <span class="unit">%</span>
+            </span>
+          </label>
+        </div>
+        <div class="input-wrapper" id="minSlope">
+          <label for="minSlope">
+            <span class="label-text">Min Slope (%)</span>
+            <input type="range" min="0" max="0.2" step="0.01" />
+            <span class="display-value">
+              <span class="value">0.5</span>
+              <span class="unit">%</span>
+            </span>
+          </label>
+        </div>
+        <div class="input-wrapper" id="isTesting">
+          <button class="toggle-button">
+            Testing is <span class="value">on</span>
+          </button>
+        </div>
+      </section>
 
       <footer>
         <p>
