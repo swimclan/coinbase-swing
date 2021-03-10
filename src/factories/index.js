@@ -138,7 +138,8 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
       const historicTimeRange = getTimeRange(new Date(), "Minutes", period * 5);
 
       let priceHistory = [];
-      while (!priceHistory.length) {
+      let retryCount = 0;
+      while (!priceHistory.length && retryCount < 50) {
         try {
           priceHistory = _reverse(
             await publicClient.getProductHistoricRates(id, {
@@ -151,8 +152,14 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
           console.log("priceHistory failed");
           console.error(err.data || err.message || err);
         }
+        retryCount++;
         await wait(300);
       }
+
+      if (!priceHistory.length) {
+        throw new Error("priceHistory not retrieved.  Bailing...");
+      }
+
       // Compute percent change
       const open = stats.open;
       const price = +ticker.price;
