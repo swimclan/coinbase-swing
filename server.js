@@ -23,9 +23,12 @@ let walkAway = +process.argv[6] || 0.03;
 let strategy = process.argv[7] || "change";
 let maxVwap = +process.argv[8] || -0.001;
 let minSlope = +process.argv[9] || 0.001;
-let isTesting = process.argv[8] === "test" || true;
+let isTesting = process.argv[10] === "test" || true;
+let maxOrders = process.argv[11] || 0;
 
+// Stores for API retrieval
 let lastState = {};
+let lastOrders = [];
 
 // Build Coinbase clients
 const { public: publicClient, auth: authClient } = CoinbaseFactory(process.env);
@@ -53,7 +56,7 @@ function setClock() {
 const dailyClock = Clock("24h");
 dailyClock.on("tick", portfolio.reset);
 
-async function executeBuy(state, order, fraction, strategy) {
+async function executeBuy(state, orderFactory, fraction, strategy) {
   const sortedState = sortByMetric(state.get(), strategy);
   const eligibleProducts = sortedState.products.filter((prod) => {
     const stats = Object.values(prod)[0];
@@ -73,14 +76,14 @@ async function executeBuy(state, order, fraction, strategy) {
 
   console.log(`Buying...`);
   console.log(productToBuy);
-  return await order.buy({
+  return await orderFactory.buy({
     product: productToBuy,
     cash: sortedState.cash,
     fraction,
   });
 }
 
-async function executeSell(buyOrder, order, margin) {
+async function executeSell(buyOrder, orderFactory, margin) {
   let filled = false;
   let completedOrder;
   let tryCount = 1;
@@ -96,7 +99,7 @@ async function executeSell(buyOrder, order, margin) {
     throw new Error("Couldnt execute the sell, trying again");
   }
   console.log("Placing limit sell");
-  return await order.sell({ ...buyOrder, margin });
+  return await orderFactory.sell({ ...buyOrder, margin });
 }
 
 // Main routine
@@ -108,13 +111,17 @@ async function main() {
     interval: wakeTime,
     portfolio,
   });
-  const order = OrderFactory({ authClient, publicClient });
+  const orderFactory = OrderFactory({ authClient, publicClient });
+  await orderFactory.init();
+
+  // Assign latest current orders to global lastOrders for api retrieval
+  lastOrders = orderFactory.getAllOrders();
 
   // Walk away?
   const currentGain = portfolio.getGain();
   if (currentGain >= walkAway) {
     portfolio.freeze();
-    await order.remargin(margin, stopMargin, true);
+    await orderFactory.remargin(margin, stopMargin, true);
     return;
   }
 
@@ -128,15 +135,21 @@ async function main() {
   const { crypto, products } = lastState;
 
   console.log("cleaning orphans");
-  await order.cleanOrphans(crypto, products);
+  await orderFactory.cleanOrphans(crypto, products);
 
   console.log("Analyzing existing orders");
-  const resells = await order.remargin(margin, stopMargin);
+  const resells = await orderFactory.remargin(margin, stopMargin);
   console.log(`Remargined ${resells.length} orders`);
+
+  // Check to see if you are under max allowed open orders
+  if (orderFactory.getAllOrders().length >= maxOrders && maxOrders > 0) {
+    console.log("Max orders reached.  New orders not allowed at this time...");
+    return;
+  }
 
   let buyOrder;
   try {
-    buyOrder = await executeBuy(state, order, fraction, strategy);
+    buyOrder = await executeBuy(state, orderFactory, fraction, strategy);
   } catch (err) {
     console.error(err);
     buyOrder = null;
@@ -150,7 +163,7 @@ async function main() {
     sold = false;
   while (!sold) {
     try {
-      sellOrder = await executeSell(buyOrder, order, margin);
+      sellOrder = await executeSell(buyOrder, orderFactory, margin);
       sold = true;
     } catch (err) {
       console.warn("Couldnt get sell order placed. Trying again....");
@@ -160,6 +173,8 @@ async function main() {
   sellOrder && console.log("Sold...");
   sellOrder && console.log(sellOrder);
 }
+
+/* API SECTION */
 
 app.get("/state", (req, res, next) => {
   if (isEmpty(lastState)) {
@@ -179,14 +194,16 @@ app.get("/config", (req, res, next) => {
     isTesting,
     maxVwap,
     minSlope,
+    maxOrders,
   });
 });
 
 app.get("/portfolio", (req, res, next) => {
   return res.status(200).json({
+    gain: portfolio.getGain(),
+    frozen: portfolio.isFrozen(),
     balances: portfolio.getBalances(),
     prices: portfolio.getPrices(),
-    gain: portfolio.getGain(),
   });
 });
 
@@ -201,6 +218,7 @@ app.post("/config", (req, res, next) => {
     isTesting: it,
     maxVwap: mv,
     minSlope: ms,
+    maxOrders: mo,
   } = req.body;
 
   wt && (wakeTime = wt);
@@ -212,6 +230,7 @@ app.post("/config", (req, res, next) => {
   isTesting = !!it;
   mv && (maxVwap = mv);
   ms && (minSlope = ms);
+  mo != null && !isNaN(mo) && (maxOrders = mo);
 
   setClock();
 
@@ -225,7 +244,12 @@ app.post("/config", (req, res, next) => {
     isTesting,
     maxVwap,
     minSlope,
+    maxOrders,
   });
+});
+
+app.get("/orders", (req, res, next) => {
+  return res.status(200).json({ orders: lastOrders });
 });
 
 app.listen(process.env.NODE_PORT, () => {

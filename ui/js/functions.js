@@ -9,6 +9,7 @@ let state = {
   minSlope: 0,
   strategy: "change",
   isTesting: "on",
+  maxOrders: 0,
 };
 // Initialize elements
 let elements = {
@@ -69,6 +70,8 @@ function initializeState(config) {
       setState("isTesting", val ? "on" : "off");
     } else if (attr === "strategy") {
       setState("strategy", val);
+    } else if (attr === "maxOrders") {
+      setState("maxOrders", val);
     } else {
       setState(attr, val * 100);
     }
@@ -84,6 +87,8 @@ async function sendConfig() {
       reqData.isTesting = val === "on";
     } else if (attr === "strategy") {
       reqData.strategy = val;
+    } else if (attr === "maxOrders") {
+      reqData.maxOrders = val;
     } else {
       reqData[attr] = val / 100;
     }
@@ -107,8 +112,12 @@ window.onload = async function main() {
   const config = await configRes.json();
   console.log(config);
 
+  const portfolioRes = await fetch("/api/portfolio");
+  const portfolio = await portfolioRes.json();
+
   bootstrapInput(elements, "strategy", "select");
   bootstrapInput(elements, "wakeTime", "input");
+  bootstrapInput(elements, "maxOrders", "input");
   bootstrapInput(elements, "fraction", "input");
   bootstrapInput(elements, "margin", "input");
   bootstrapInput(elements, "stopMargin", "input");
@@ -116,6 +125,10 @@ window.onload = async function main() {
   bootstrapInput(elements, "maxVwap", "input");
   bootstrapInput(elements, "minSlope", "input");
   bootstrapInput(elements, "isTesting", "button");
+
+  const gainDisplayEl = document.getElementById("gain-display");
+  gainDisplayEl.classList.add(portfolio.gain >= 0 ? "green" : "red");
+  gainDisplayEl.innerText = `${(portfolio.gain * 100).toFixed(2)}%`;
 
   const applyButton = document.getElementById("apply");
   applyButton.addEventListener("click", sendConfig);

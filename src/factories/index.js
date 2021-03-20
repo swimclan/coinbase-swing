@@ -224,7 +224,11 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
 
 function OrderFactory({ authClient, publicClient }) {
   let targetPrice;
+  let currentOrders = [];
   return {
+    async init() {
+      currentOrders = await authClient.getOrders();
+    },
     async buy({ product, cash, fraction }) {
       const [product_id, { price, min, inc }] = Object.entries(product)[0];
       targetPrice = price;
@@ -252,13 +256,12 @@ function OrderFactory({ authClient, publicClient }) {
         post_only: false,
       });
     },
-    async getAll() {
-      return await authClient.getOrders();
+    getAllOrders() {
+      return currentOrders;
     },
     async remargin(margin, stopMargin, force = false) {
       let ret = [];
       try {
-        const currentOrders = await authClient.getOrders();
         for (const currentOrder of currentOrders) {
           const ticker = await publicClient.getProductTicker(
             currentOrder.product_id

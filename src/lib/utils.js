@@ -14,6 +14,7 @@ function returnConfig(
     isTesting,
     maxVwap,
     minSlope,
+    maxOrders,
   }
 ) {
   return res.status(200).json({
@@ -26,6 +27,7 @@ function returnConfig(
     walkAway,
     strategy,
     isTesting,
+    maxOrders,
   });
 }
 
