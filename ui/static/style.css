@@ -90,6 +90,12 @@ header {
   color: #ffffff;
 }
 
+div.header-buttons-wrapper {
+  width: 33%;
+  display: flex;
+  justify-content: space-around;
+}
+
 button.apply-button {
   text-transform: uppercase;
   background-color: #1453f0;
@@ -98,6 +104,9 @@ button.apply-button {
   border: 2px solid #fff;
   border-radius: 2px;
   padding: 5px;
+}
+button#refresh {
+  width: 2rem;
 }
 
 h4.subhead {
@@ -145,6 +154,38 @@ section#gain-section {
 
 section#params-section {
   padding: 0.6rem;
+}
+
+div#notification {
+  color: white;
+  text-align: center;
+}
+
+div#notification.info {
+  padding: 0.4rem;
+  background-color: darkgreen;
+}
+
+div.gain-wrapper {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 1rem;
+}
+
+button#force-walk {
+  text-transform: uppercase;
+  background: none;
+  color: #fff;
+  outline: none;
+  border: 2px solid #fff;
+  border-radius: 2px;
+  padding: 5px;
+  height: 1.8rem;
+}
+
+div#notification.error {
+  padding: 0.4rem;
+  background-color: darkred;
 }
 
 div#gain-display {

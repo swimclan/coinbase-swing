@@ -102,6 +102,11 @@ async function executeSell(buyOrder, orderFactory, margin) {
   return await orderFactory.sell({ ...buyOrder, margin });
 }
 
+async function executeWalkAway(portfolio, orderFactory) {
+  portfolio.freeze();
+  await orderFactory.remargin(margin, stopMargin, true);
+}
+
 // Main routine
 async function main() {
   console.log("Fetching state");
@@ -120,8 +125,7 @@ async function main() {
   // Walk away?
   const currentGain = portfolio.getGain();
   if (currentGain >= walkAway) {
-    portfolio.freeze();
-    await orderFactory.remargin(margin, stopMargin, true);
+    await executeWalkAway(portfolio, orderFactory);
     return;
   }
 
@@ -250,6 +254,12 @@ app.post("/config", (req, res, next) => {
 
 app.get("/orders", (req, res, next) => {
   return res.status(200).json({ orders: lastOrders });
+});
+
+app.get("/walk", async (req, res, next) => {
+  const orderFactory = OrderFactory({ authClient, publicClient });
+  await executeWalkAway(portfolio, orderFactory);
+  return res.status(200).json({ result: true });
 });
 
 app.listen(process.env.NODE_PORT, () => {

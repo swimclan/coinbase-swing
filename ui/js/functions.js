@@ -78,6 +78,34 @@ function initializeState(config) {
   });
 }
 
+function setNotification(message, level) {
+  const notifyEl = document.getElementById("notification");
+  switch (level) {
+    case "info":
+      notifyEl.classList.add("info");
+      notifyEl.innerText = message;
+      break;
+    case "error":
+      notifyEl.classList.add("error");
+      notifyEl.innerText = message;
+      break;
+    default:
+    // do nothing
+  }
+
+  setTimeout(() => {
+    notifyEl.className = "";
+    notifyEl.innerText = "";
+  }, 3000);
+}
+
+async function sendWalk() {
+  const res = await fetch("/api/walk");
+  const status = await res.json();
+  console.log(status);
+  setNotification("Walked away successfully", "info");
+}
+
 async function sendConfig() {
   const reqData = {};
   Object.entries(state).forEach(function ([attr, val]) {
@@ -102,6 +130,7 @@ async function sendConfig() {
       body: JSON.stringify(reqData),
     });
     console.log(await res.json());
+    setNotification("New configuration successful", "info");
   } catch (err) {
     console.error("FAILED POST");
   }
@@ -132,6 +161,12 @@ window.onload = async function main() {
 
   const applyButton = document.getElementById("apply");
   applyButton.addEventListener("click", sendConfig);
+
+  const walkButton = document.getElementById("force-walk");
+  walkButton.addEventListener("click", sendWalk);
+
+  const refreshButton = document.getElementById("refresh");
+  refreshButton.addEventListener("click", () => window.location.reload());
 
   initializeState(config);
   elements.inputs["isTesting"].classList.add(state.isTesting);

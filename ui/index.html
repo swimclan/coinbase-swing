@@ -61,15 +61,22 @@
 
   <body>
     <div class="wrapper">
+      <div id="notification"></div>
       <header>
         <h3>Coinbase swing</h3>
-        <button id="apply" class="apply-button">Apply</button>
+        <div class="header-buttons-wrapper">
+          <button id="refresh" class="apply-button">&#10227;</button>
+          <button id="apply" class="apply-button">Apply</button>
+        </div>
       </header>
 
       <section class="main-body">
         <section class="params" id="gain-section">
           <h4 class="subhead">Current 24h gain</h4>
-          <div id="gain-display"></div>
+          <div class="gain-wrapper">
+            <div id="gain-display"></div>
+            <button id="force-walk">Walk</button>
+          </div>
         </section>
         <section class="params" id="params-section">
           <h4 class="subhead">Trading parameters</h4>
