@@ -25,6 +25,8 @@ let maxVwap = +process.argv[8] || -0.001;
 let minSlope = +process.argv[9] || 0.001;
 let isTesting = process.argv[10] === "test" || true;
 let maxOrders = process.argv[11] || 0;
+let maxVolatility = process.argv[12] || 0.01;
+let minLoss = process.argv[13] || -0.5;
 
 // Stores for API retrieval
 let lastState = {};
@@ -56,17 +58,26 @@ function setClock() {
 const dailyClock = Clock("24h");
 dailyClock.on("tick", portfolio.reset);
 
+function getEligibleByStrategy(products) {
+  return products.filter((prod) => {
+    if (strategy === "compositeScore") {
+      return prod.vwap <= maxVwap && prod.slope >= minSlope;
+    } else if (strategy === "vwap") {
+      return prod.vwap <= maxVwap;
+    } else if (strategy === "slope") {
+      return prod.slope >= minSlope;
+    } else if (strategy === "change") {
+      return prod.change >= minLoss;
+    } else if (strategy === "volatility") {
+      return prod.volatility <= maxVolatility;
+    }
+    return true;
+  });
+}
+
 async function executeBuy(state, orderFactory, fraction, strategy) {
   const sortedState = sortByMetric(state.get(), strategy);
-  const eligibleProducts = sortedState.products.filter((prod) => {
-    const stats = Object.values(prod)[0];
-    return (
-      stats.vwap < maxVwap &&
-      stats.slope > minSlope &&
-      stats.shortVwap < maxVwap &&
-      stats.shortSlope > minSlope
-    );
-  });
+  let eligibleProducts = getEligibleByStrategy(ortedState.products);
 
   if (!eligibleProducts.length) {
     console.log("Nothing looks good...  Try again later");
@@ -199,6 +210,8 @@ app.get("/config", (req, res, next) => {
     maxVwap,
     minSlope,
     maxOrders,
+    maxVolatility,
+    minLoss,
   });
 });
 
@@ -223,6 +236,8 @@ app.post("/config", (req, res, next) => {
     maxVwap: mv,
     minSlope: ms,
     maxOrders: mo,
+    maxVolatility: mvol,
+    minLoss: ml,
   } = req.body;
 
   wt && (wakeTime = wt);
@@ -235,6 +250,8 @@ app.post("/config", (req, res, next) => {
   mv && (maxVwap = mv);
   ms && (minSlope = ms);
   mo != null && !isNaN(mo) && (maxOrders = mo);
+  mvol && (maxVolatility = mvol);
+  ml && (minLoss = ml);
 
   setClock();
 
@@ -249,6 +266,8 @@ app.post("/config", (req, res, next) => {
     maxVwap,
     minSlope,
     maxOrders,
+    maxVolatility,
+    minLoss,
   });
 });
 
@@ -258,6 +277,7 @@ app.get("/orders", (req, res, next) => {
 
 app.get("/walk", async (req, res, next) => {
   const orderFactory = OrderFactory({ authClient, publicClient });
+  await orderFactory.init();
   await executeWalkAway(portfolio, orderFactory);
   return res.status(200).json({ result: true });
 });

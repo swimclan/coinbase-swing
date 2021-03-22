@@ -13,6 +13,8 @@ const {
   getTimeRange,
   calculateVWAP,
   convertTimeShortHandToMinutes,
+  calculateRSI,
+  calcAverageMoves,
 } = require("../utils");
 
 describe("utils", () => {
@@ -69,5 +71,26 @@ describe("utils", () => {
     expect(convertTimeShortHandToMinutes("5m")).toEqual(5);
     expect(convertTimeShortHandToMinutes("2h")).toEqual(120);
     expect(convertTimeShortHandToMinutes("45s")).toEqual(1);
+  });
+  test("calcAverageMoves() will give the average of all the moves that went in a specified direction", () => {
+    // [ time, low, high, open, close, volume ]
+    const candles = [
+      [1000, 10, 30, 10, 20, 100],
+      [1001, 10, 30, 10, 25, 100],
+      [1002, 10, 30, 10, 20, 100],
+      [1003, 10, 30, 10, 15, 100],
+    ];
+
+    expect(calcAverageMoves(candles, "up")).toEqual(25);
+    expect(calcAverageMoves(candles, "down")).toEqual(17.5);
+  });
+  test("calculateRSI() will calculate the RSI for a given set of candles", () => {
+    const candles = [
+      [1000, 10, 30, 10, 20, 100],
+      [1001, 10, 30, 10, 25, 100],
+      [1002, 10, 30, 10, 20, 100],
+      [1003, 10, 30, 10, 15, 100],
+    ];
+    expect(calculateRSI(candles).toFixed(2)).toEqual("58.82");
   });
 });

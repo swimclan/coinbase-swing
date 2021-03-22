@@ -1,3 +1,5 @@
+const _sortBy = require("lodash/sortBy");
+
 function wait(time) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
@@ -15,6 +17,8 @@ function returnConfig(
     maxVwap,
     minSlope,
     maxOrders,
+    maxVolatility,
+    minLoss,
   }
 ) {
   return res.status(200).json({
@@ -28,92 +32,16 @@ function returnConfig(
     strategy,
     isTesting,
     maxOrders,
+    maxVolatility,
+    minLoss,
   });
 }
 
 function sortByMetric(state, metric) {
-  const metrics = {
-    change: 1,
-    volatility: 2,
-    compositeScore: 3,
-    vwap: 4,
-    shortVwap: 5,
-    slope: 6,
-    shortSlope: 7,
-  };
   const { products } = state;
   return {
     ...state,
-    products: Object.entries(products)
-      .map(
-        ([
-          prod,
-          {
-            price,
-            change,
-            volatility,
-            compositeScore,
-            vwap,
-            shortVwap,
-            slope,
-            shortSlope,
-            min,
-            inc,
-          },
-        ]) => {
-          return [
-            prod,
-            change,
-            volatility,
-            compositeScore,
-            vwap,
-            shortVwap,
-            slope,
-            shortSlope,
-            price,
-            min,
-            inc,
-          ];
-        }
-      )
-      .sort((a, b) => {
-        if (a[metrics[metric]] < b[metrics[metric]]) {
-          return -1;
-        } else if (a[metrics[metric]] > b[metrics[metric]]) {
-          return 1;
-        }
-        return 0;
-      })
-      .map(
-        ([
-          id,
-          change,
-          volatility,
-          compositeScore,
-          vwap,
-          shortVwap,
-          slope,
-          shortSlope,
-          price,
-          min,
-          inc,
-        ]) => {
-          return {
-            [id]: {
-              price,
-              change,
-              volatility,
-              compositeScore,
-              vwap,
-              shortVwap,
-              slope,
-              shortSlope,
-              min,
-              inc,
-            },
-          };
-        }
-      ),
+    products: _sortBy(products, [metric]),
   };
 }
 
@@ -158,6 +86,28 @@ function calculateVariance(vals = []) {
   const deltaYs = getDeltaYs(vals);
   const squaredErrorVals = squareArr(deltaYs);
   return sumArr(squaredErrorVals) / vals.length;
+}
+
+function calculateRSI(priceHistory) {
+  const rs =
+    calcAverageMoves(priceHistory, "up") /
+    calcAverageMoves(priceHistory, "down");
+
+  return 100 - 100 / (1 + rs);
+}
+
+function calcAverageMoves(priceHistory, direction) {
+  const closes = priceHistory
+    .slice(1)
+    .filter((candle, i) => {
+      if (direction === "up") {
+        return candle[4] >= priceHistory[i][4];
+      }
+      return candle[4] < priceHistory[i][4];
+    })
+    .map((candle) => candle[4]);
+
+  return meanArr(closes);
 }
 
 function calculateVolatility(vals) {
@@ -222,4 +172,6 @@ module.exports = {
   calculateVWAP,
   convertTimeShortHandToMinutes,
   returnConfig,
+  calcAverageMoves,
+  calculateRSI,
 };

@@ -100,7 +100,7 @@ function PortfolioFactory() {
 }
 
 async function StateFactory({ publicClient, authClient, interval, portfolio }) {
-  let ret = { cash: 0, products: {}, crypto: {} };
+  let ret = { cash: 0, products: [], crypto: {} };
   try {
     const products = await publicClient.getProducts();
     const account = await authClient.getAccount();
@@ -170,42 +170,34 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
       // Compute volatility (sigma relative to price)
       const volatility = calculateVolatility(closes) / price;
 
-      // Compute the linear least squares regression for long and short terms
+      // Compute the linear least squares regression
       const points = closes.map((close, i) => [i + 1, close]);
       const { equation: longEq } = regression.linear(points, { precision: 8 });
       const slope = longEq[0];
-      const { equation: shortEq } = regression.linear(points.slice(-period), {
-        precision: 8,
-      });
-      const shortSlope = shortEq[0];
 
       // Compute VWAP
       const vwap = calculateVWAP(priceHistory);
-      const shortVwap = calculateVWAP(priceHistory.slice(-period));
 
-      // Compute VWAP relative to price
+      // Compute percentage diff from price to vwap
       const relativeVwap = (price - vwap) / vwap;
-      const relativeShortVwap = (price - shortVwap) / shortVwap;
 
       // Compute slope relative to price
       const relativeSlope = slope / price;
-      const relativeShortSlope = shortSlope / price;
 
       // Compute vwap-slope weighted composite
       const compositeScore = relativeVwap - relativeSlope * 5;
 
-      ret.products[id] = {
+      ret.products.push({
+        id,
         price,
         volatility,
         change,
         compositeScore,
         vwap: relativeVwap,
-        shortVwap: relativeShortVwap,
         slope: relativeSlope,
-        shortSlope: relativeShortSlope,
         min,
         inc,
-      };
+      });
     }
   } catch (error) {
     typeof error === "string" && console.error(error);
@@ -230,7 +222,7 @@ function OrderFactory({ authClient, publicClient }) {
       currentOrders = await authClient.getOrders();
     },
     async buy({ product, cash, fraction }) {
-      const [product_id, { price, min, inc }] = Object.entries(product)[0];
+      const { id: product_id, price, min, inc } = product;
       targetPrice = price;
       const rawSize = calcSize(price, cash, fraction);
       const isValid = isValidSize(rawSize, min);

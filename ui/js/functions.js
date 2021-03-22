@@ -7,6 +7,8 @@ let state = {
   walkAway: 0,
   maxVwap: 0,
   minSlope: 0,
+  maxVolatility: 0,
+  minLoss: 0,
   strategy: "change",
   isTesting: "on",
   maxOrders: 0,
@@ -25,6 +27,30 @@ function nullifyStateAttributes(state) {
   };
 }
 
+function showConditionalControls(strategy) {
+  const conditionalControls = [
+    "minLoss",
+    "maxVolatility",
+    "maxVwap",
+    "minSlope",
+  ];
+  const conditionalElMap = {
+    change: ["minLoss"],
+    volatility: ["maxVolatility"],
+    compositeScore: ["maxVwap", "minSlope"],
+    vwap: ["maxVwap"],
+    slope: ["minSlope"],
+  };
+
+  const getWrapper = (id) => document.querySelector(`.input-wrapper#${id}`);
+  conditionalControls.forEach((id) => {
+    getWrapper(id).classList.add("hide");
+  });
+  conditionalElMap[strategy].forEach((id) => {
+    getWrapper(id).classList.remove("hide");
+  });
+}
+
 function render(state) {
   Object.entries(state).forEach(function ([attr, val]) {
     elements.values[attr].innerText = val;
@@ -38,6 +64,9 @@ function setState(attr, value) {
 
 function onChange(attr) {
   return function ({ target }) {
+    if (target.name === "strategy") {
+      showConditionalControls(target.value);
+    }
     if (target.tagName === "BUTTON") {
       target.classList.remove(state[attr]);
       setState(attr, state[attr] === "on" ? "off" : "on");
@@ -153,6 +182,8 @@ window.onload = async function main() {
   bootstrapInput(elements, "walkAway", "input");
   bootstrapInput(elements, "maxVwap", "input");
   bootstrapInput(elements, "minSlope", "input");
+  bootstrapInput(elements, "maxVolatility", "input");
+  bootstrapInput(elements, "minLoss", "input");
   bootstrapInput(elements, "isTesting", "button");
 
   const gainDisplayEl = document.getElementById("gain-display");
@@ -170,5 +201,7 @@ window.onload = async function main() {
 
   initializeState(config);
   elements.inputs["isTesting"].classList.add(state.isTesting);
+
+  showConditionalControls(state.strategy);
   render(state);
 };

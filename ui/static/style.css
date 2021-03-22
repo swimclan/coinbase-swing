@@ -96,6 +96,10 @@ div.header-buttons-wrapper {
   justify-content: space-around;
 }
 
+.hide {
+  display: none;
+}
+
 button.apply-button {
   text-transform: uppercase;
   background-color: #1453f0;
@@ -103,10 +107,10 @@ button.apply-button {
   outline: none;
   border: 2px solid #fff;
   border-radius: 2px;
-  padding: 5px;
 }
 button#refresh {
-  width: 2rem;
+  font-size: 1.2rem;
+  width: 2.2rem;
 }
 
 h4.subhead {

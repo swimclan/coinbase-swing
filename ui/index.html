@@ -86,11 +86,9 @@
               <select name="strategy">
                 <option value="change">24 hour low</option>
                 <option value="volatility">High volatility</option>
-                <option value="shortVwap">Short VWAP</option>
-                <option value="vwap">Long VWAP</option>
-                <option value="shortSlope">Short slope</option>
-                <option value="slope">Long slope</option>
-                <option value="compositeScore">VWAP/slope composite</option>
+                <option value="vwap">VWAP</option>
+                <option value="slope">Slope</option>
+                <option value="compositeScore">VWAP/Slope composite</option>
               </select>
               <span class="display-value">
                 <span class="value" style="display: none">change</span>
@@ -160,7 +158,7 @@
           <div class="input-wrapper" id="maxVwap">
             <label for="maxVwap">
               <span class="label-text">Max VWAP (%)</span>
-              <input type="range" min="-0.1" max="-0.01" step="0.005" />
+              <input type="range" min="-5" max="-0.01" step="0.01" />
               <span class="display-value">
                 <span class="value">-0.5</span>
                 <span class="unit">%</span>
@@ -169,10 +167,30 @@
           </div>
           <div class="input-wrapper" id="minSlope">
             <label for="minSlope">
-              <span class="label-text">Min Slope (%)</span>
+              <span class="label-text">Min slope (%)</span>
               <input type="range" min="-0.1" max="0.1" step="0.005" />
               <span class="display-value">
                 <span class="value">0.5</span>
+                <span class="unit">%</span>
+              </span>
+            </label>
+          </div>
+          <div class="input-wrapper" id="maxVolatility">
+            <label for="maxVolatility">
+              <span class="label-text">Max volatility (%)</span>
+              <input type="range" min="0.1" max="5" step="0.1" />
+              <span class="display-value">
+                <span class="value">0.5</span>
+                <span class="unit">%</span>
+              </span>
+            </label>
+          </div>
+          <div class="input-wrapper" id="minLoss">
+            <label for="minLoss">
+              <span class="label-text">Min loss (%)</span>
+              <input type="range" min="-50" max="-1" step="1" />
+              <span class="display-value">
+                <span class="value">-10</span>
                 <span class="unit">%</span>
               </span>
             </label>
