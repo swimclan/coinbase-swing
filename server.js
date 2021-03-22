@@ -69,7 +69,7 @@ function getEligibleByStrategy(products) {
     } else if (strategy === "change") {
       return prod.change >= minLoss;
     } else if (strategy === "volatility") {
-      return prod.volatility <= maxVolatility;
+      return Math.abs(prod.volatility) <= maxVolatility;
     }
     return true;
   });

@@ -190,7 +190,7 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
       ret.products.push({
         id,
         price,
-        volatility,
+        volatility: -volatility,
         change,
         compositeScore,
         vwap: relativeVwap,
