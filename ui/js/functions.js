@@ -96,6 +96,7 @@ function getPercentValue(val) {
   if (str.length > 5) {
     return +val.toFixed(3);
   }
+  return val;
 }
 
 function initializeState(config) {
