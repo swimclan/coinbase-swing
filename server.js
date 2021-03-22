@@ -77,7 +77,7 @@ function getEligibleByStrategy(products) {
 
 async function executeBuy(state, orderFactory, fraction, strategy) {
   const sortedState = sortByMetric(state.get(), strategy);
-  let eligibleProducts = getEligibleByStrategy(ortedState.products);
+  let eligibleProducts = getEligibleByStrategy(sortedState.products);
 
   if (!eligibleProducts.length) {
     console.log("Nothing looks good...  Try again later");

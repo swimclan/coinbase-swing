@@ -91,6 +91,13 @@ function bootstrapInput(elements, attr, elType) {
   elements.inputs[attr].addEventListener(eventTypes[elType], onChange(attr));
 }
 
+function getPercentValue(val) {
+  const str = val.toString();
+  if (str.length > 5) {
+    return +val.toFixed(3);
+  }
+}
+
 function initializeState(config) {
   Object.entries(config).forEach(function ([attr, val]) {
     if (attr === "wakeTime") {
@@ -102,7 +109,7 @@ function initializeState(config) {
     } else if (attr === "maxOrders") {
       setState("maxOrders", val);
     } else {
-      setState(attr, val * 100);
+      setState(attr, getPercentValue(val * 100));
     }
   });
 }
