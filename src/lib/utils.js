@@ -19,6 +19,8 @@ function returnConfig(
     maxOrders,
     maxVolatility,
     minLoss,
+    maxRSI,
+    minRelVol,
   }
 ) {
   return res.status(200).json({
@@ -34,6 +36,8 @@ function returnConfig(
     maxOrders,
     maxVolatility,
     minLoss,
+    maxRSI,
+    minRelVol,
   });
 }
 
@@ -110,6 +114,13 @@ function calcAverageMoves(priceHistory, direction) {
   return meanArr(closes);
 }
 
+function calculateRelativeVolume(priceHistory, n) {
+  return (
+    meanArr(priceHistory.slice(-n).map((ph) => ph[5])) /
+    meanArr(priceHistory.map((ph) => ph[5]))
+  );
+}
+
 function calculateVolatility(vals) {
   return parseFloat(Math.sqrt(calculateVariance(vals)).toFixed(2));
 }
@@ -174,4 +185,5 @@ module.exports = {
   returnConfig,
   calcAverageMoves,
   calculateRSI,
+  calculateRelativeVolume,
 };

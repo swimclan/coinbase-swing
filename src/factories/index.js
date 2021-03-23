@@ -12,6 +12,8 @@ const {
   calculateVolatility,
   calculateVWAP,
   convertTimeShortHandToMinutes,
+  calculateRelativeVolume,
+  calculateRSI,
 } = require("../lib/utils");
 
 const instances = {};
@@ -133,13 +135,9 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
       portfolio.setTickerPrice(id, ticker);
       await wait(300);
 
-      // Get price history for time series metrics for 10x the interval of the trade system
+      // Get price history for time series metrics for the last 6 hours
       const period = convertTimeShortHandToMinutes(interval);
-      const historicTimeRange = getTimeRange(
-        new Date(),
-        "Minutes",
-        period * 10
-      );
+      const historicTimeRange = getTimeRange(new Date(), "Minutes", 360);
 
       let priceHistory = [];
       let retryCount = 0;
@@ -191,6 +189,12 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
       // Compute vwap-slope weighted composite
       const compositeScore = relativeVwap - relativeSlope * 5;
 
+      // Compute relative volume
+      const relativeVolume = calculateRelativeVolume(priceHistory, period);
+
+      // Compute RSI
+      const rsi = calculateRSI(priceHistory);
+
       ret.products.push({
         id,
         price,
@@ -199,6 +203,8 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
         compositeScore,
         vwap: relativeVwap,
         slope: relativeSlope,
+        relativeVolume,
+        rsi,
         min,
         inc,
       });

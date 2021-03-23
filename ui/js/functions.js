@@ -9,6 +9,8 @@ let state = {
   minSlope: 0,
   maxVolatility: 0,
   minLoss: 0,
+  maxRSI: 0,
+  minRelVol: 0,
   strategy: "change",
   isTesting: "on",
   maxOrders: 0,
@@ -33,6 +35,7 @@ function showConditionalControls(strategy) {
     "maxVolatility",
     "maxVwap",
     "minSlope",
+    "minRelVol",
   ];
   const conditionalElMap = {
     change: ["minLoss"],
@@ -40,6 +43,7 @@ function showConditionalControls(strategy) {
     compositeScore: ["maxVwap", "minSlope"],
     vwap: ["maxVwap"],
     slope: ["minSlope"],
+    relativeVolume: ["minRelVol"],
   };
 
   const getWrapper = (id) => document.querySelector(`.input-wrapper#${id}`);
@@ -109,6 +113,10 @@ function initializeState(config) {
       setState("strategy", val);
     } else if (attr === "maxOrders") {
       setState("maxOrders", val);
+    } else if (attr === "minRelVol") {
+      setState("minRelVol", val);
+    } else if (attr === "maxRSI") {
+      setState("maxRSI", val);
     } else {
       setState(attr, getPercentValue(val * 100));
     }
@@ -154,6 +162,10 @@ async function sendConfig() {
       reqData.strategy = val;
     } else if (attr === "maxOrders") {
       reqData.maxOrders = val;
+    } else if (attr === "minRelVol") {
+      reqData.minRelVol = val;
+    } else if (attr === "maxRSI") {
+      reqData.maxRSI = val;
     } else {
       reqData[attr] = val / 100;
     }
@@ -191,6 +203,9 @@ window.onload = async function main() {
   bootstrapInput(elements, "maxVwap", "input");
   bootstrapInput(elements, "minSlope", "input");
   bootstrapInput(elements, "maxVolatility", "input");
+  bootstrapInput(elements, "minLoss", "input");
+  bootstrapInput(elements, "minRelVol", "input");
+  bootstrapInput(elements, "maxRSI", "input");
   bootstrapInput(elements, "minLoss", "input");
   bootstrapInput(elements, "isTesting", "button");
 

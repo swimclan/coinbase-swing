@@ -27,6 +27,8 @@ let isTesting = process.argv[10] === "test" || true;
 let maxOrders = process.argv[11] || 0;
 let maxVolatility = process.argv[12] || 0.01;
 let minLoss = process.argv[13] || -0.5;
+let maxRSI = process.argv[14] || 30;
+let minRelVol = process.argv[15] || 5;
 
 // Stores for API retrieval
 let lastState = {};
@@ -60,16 +62,19 @@ dailyClock.on("tick", portfolio.reset);
 
 function getEligibleByStrategy(products) {
   return products.filter((prod) => {
+    const passRSI = prod.rsi <= maxRSI;
     if (strategy === "compositeScore") {
-      return prod.vwap <= maxVwap && prod.slope >= minSlope;
+      return passRSI && prod.vwap <= maxVwap && prod.slope >= minSlope;
     } else if (strategy === "vwap") {
-      return prod.vwap <= maxVwap;
+      return passRSI && prod.vwap <= maxVwap;
     } else if (strategy === "slope") {
-      return prod.slope >= minSlope;
+      return passRSI && prod.slope >= minSlope;
     } else if (strategy === "change") {
-      return prod.change >= minLoss;
+      return passRSI && prod.change >= minLoss;
     } else if (strategy === "volatility") {
-      return Math.abs(prod.volatility) <= maxVolatility;
+      return passRSI && Math.abs(prod.volatility) <= maxVolatility;
+    } else if (strategy === "relativeVolume") {
+      return passRSI && prod.relativeVolume > minRelVol;
     }
     return true;
   });
@@ -212,6 +217,8 @@ app.get("/config", (req, res, next) => {
     maxOrders,
     maxVolatility,
     minLoss,
+    maxRSI,
+    minRelVol,
   });
 });
 
@@ -238,6 +245,8 @@ app.post("/config", (req, res, next) => {
     maxOrders: mo,
     maxVolatility: mvol,
     minLoss: ml,
+    maxRSI: mr,
+    minRelVol: mrv,
   } = req.body;
 
   wt && (wakeTime = wt);
@@ -252,6 +261,8 @@ app.post("/config", (req, res, next) => {
   mo != null && !isNaN(mo) && (maxOrders = mo);
   mvol && (maxVolatility = mvol);
   ml && (minLoss = ml);
+  mr && (maxRSI = mr);
+  mrv && (minRelVol = mrv);
 
   setClock();
 
@@ -268,6 +279,8 @@ app.post("/config", (req, res, next) => {
     maxOrders,
     maxVolatility,
     minLoss,
+    maxRSI,
+    minRelVol,
   });
 });
 

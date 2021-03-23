@@ -15,6 +15,7 @@ const {
   convertTimeShortHandToMinutes,
   calculateRSI,
   calcAverageMoves,
+  calculateRelativeVolume,
 } = require("../utils");
 
 describe("utils", () => {
@@ -92,5 +93,18 @@ describe("utils", () => {
       [1003, 10, 30, 10, 15, 100],
     ];
     expect(calculateRSI(candles).toFixed(2)).toEqual("58.82");
+  });
+  test("calculateRelativeVolume() will return the relative volume of the most recent n candles", () => {
+    const candles = [
+      [1000, 10, 30, 10, 20, 300],
+      [1000, 10, 30, 10, 20, 100],
+      [1001, 10, 30, 10, 25, 200],
+      [1002, 10, 30, 10, 20, 300],
+      [1003, 10, 30, 10, 15, 400],
+      [1003, 10, 30, 10, 15, 300],
+      [1003, 10, 30, 10, 15, 700],
+      [1003, 10, 30, 10, 15, 1300],
+    ];
+    expect(calculateRelativeVolume(candles, 2).toFixed(2)).toEqual("2.22");
   });
 });

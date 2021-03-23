@@ -89,6 +89,7 @@
                 <option value="vwap">VWAP</option>
                 <option value="slope">Slope</option>
                 <option value="compositeScore">VWAP/Slope composite</option>
+                <option value="relativeVolume">Relative volume</option>
               </select>
               <span class="display-value">
                 <span class="value" style="display: none">change</span>
@@ -192,6 +193,25 @@
               <span class="display-value">
                 <span class="value">-10</span>
                 <span class="unit">%</span>
+              </span>
+            </label>
+          </div>
+          <div class="input-wrapper" id="minRelVol">
+            <label for="minRelVol">
+              <span class="label-text">Min rel volume</span>
+              <input type="range" min="1" max="50" step="1" />
+              <span class="display-value">
+                <span class="value">5</span>
+                <span class="unit">x</span>
+              </span>
+            </label>
+          </div>
+          <div class="input-wrapper" id="maxRSI">
+            <label for="maxRSI">
+              <span class="label-text">Max RSI</span>
+              <input type="range" min="1" max="50" step="1" />
+              <span class="display-value">
+                <span class="value">30</span>
               </span>
             </label>
           </div>
