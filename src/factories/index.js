@@ -193,7 +193,7 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
       const relativeVolume = calculateRelativeVolume(priceHistory, period);
 
       // Compute RSI
-      const rsi = calculateRSI(priceHistory);
+      const rsi = calculateRSI(priceHistory.slice(-15));
 
       ret.products.push({
         id,
