@@ -203,7 +203,7 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
         compositeScore,
         vwap: relativeVwap,
         slope: relativeSlope,
-        relativeVolume,
+        relativeVolume: -relativeVolume,
         rsi,
         min,
         inc,
