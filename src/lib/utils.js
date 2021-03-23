@@ -101,17 +101,18 @@ function calculateRSI(priceHistory) {
 }
 
 function calcAverageMoves(priceHistory, direction) {
-  const closes = priceHistory
-    .slice(1)
-    .filter((candle, i) => {
-      if (direction === "up") {
-        return candle[4] >= priceHistory[i][4];
-      }
-      return candle[4] < priceHistory[i][4];
-    })
-    .map((candle) => candle[4]);
+  const changes = [];
+  const closes = priceHistory.slice(1).forEach((candle, i) => {
+    if (direction === "up") {
+      candle[4] >= priceHistory[i][4] &&
+        changes.push(candle[4] - priceHistory[i][4]);
+    } else {
+      candle[4] < priceHistory[i][4] &&
+        changes.push(priceHistory[i][4] - candle[4]);
+    }
+  });
 
-  return meanArr(closes);
+  return meanArr(changes);
 }
 
 function calculateRelativeVolume(priceHistory, n) {

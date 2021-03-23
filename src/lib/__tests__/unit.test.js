@@ -79,20 +79,20 @@ describe("utils", () => {
       [1000, 10, 30, 10, 20, 100],
       [1001, 10, 30, 10, 25, 100],
       [1002, 10, 30, 10, 20, 100],
-      [1003, 10, 30, 10, 15, 100],
+      [1003, 10, 30, 10, 5, 100],
     ];
 
-    expect(calcAverageMoves(candles, "up")).toEqual(25);
-    expect(calcAverageMoves(candles, "down")).toEqual(17.5);
+    expect(calcAverageMoves(candles, "up")).toEqual(5);
+    expect(calcAverageMoves(candles, "down")).toEqual(10);
   });
   test("calculateRSI() will calculate the RSI for a given set of candles", () => {
     const candles = [
       [1000, 10, 30, 10, 20, 100],
       [1001, 10, 30, 10, 25, 100],
       [1002, 10, 30, 10, 20, 100],
-      [1003, 10, 30, 10, 15, 100],
+      [1003, 10, 30, 10, 5, 100],
     ];
-    expect(calculateRSI(candles).toFixed(2)).toEqual("58.82");
+    expect(calculateRSI(candles).toFixed(2)).toEqual("33.33");
   });
   test("calculateRelativeVolume() will return the relative volume of the most recent n candles", () => {
     const candles = [
