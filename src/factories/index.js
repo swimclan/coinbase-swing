@@ -297,7 +297,8 @@ function OrderFactory({ authClient, publicClient }) {
         const product_id = `${currency}-USD`;
         const ticker = await publicClient.getProductTicker(product_id);
         try {
-          if (+amount >= products[product_id].min) {
+          const product = products.find((prod) => prod.id === product_id);
+          if (product && +amount >= product.min) {
             console.log(`Selling ${amount.toString()} orphaned ${currency}...`);
             await this.sell({
               price: +ticker.price,
