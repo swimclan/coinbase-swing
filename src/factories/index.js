@@ -135,9 +135,9 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
       portfolio.setTickerPrice(id, ticker);
       await wait(300);
 
-      // Get price history for time series metrics for the last 6 hours
+      // Get price history for time series metrics for the last 5 hours
       const period = convertTimeShortHandToMinutes(interval);
-      const historicTimeRange = getTimeRange(new Date(), "Minutes", 360);
+      const historicTimeRange = getTimeRange(new Date(), "Minutes", 300);
 
       let priceHistory = [];
       let retryCount = 0;
