@@ -177,6 +177,11 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
       const { equation: longEq } = regression.linear(points, { precision: 8 });
       const slope = longEq[0];
 
+      const { equation: periodEq } = regression.linear(points.slice(-period), {
+        precision: 8,
+      });
+      const periodSlope = periodEq[0];
+
       // Compute VWAP
       const vwap = calculateVWAP(priceHistory);
 
@@ -204,6 +209,7 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
         vwap: relativeVwap,
         slope: relativeSlope,
         relativeVolume: -relativeVolume,
+        periodSlope,
         rsi,
         min,
         inc,

@@ -74,7 +74,11 @@ function getEligibleByStrategy(products) {
     } else if (strategy === "volatility") {
       return passRSI && Math.abs(prod.volatility) <= maxVolatility;
     } else if (strategy === "relativeVolume") {
-      return passRSI && Math.abs(prod.relativeVolume) > minRelVol;
+      return (
+        passRSI &&
+        Math.abs(prod.relativeVolume) > minRelVol &&
+        prod.periodSlope > 0
+      );
     }
     return true;
   });
