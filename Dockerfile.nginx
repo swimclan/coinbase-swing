@@ -9,10 +9,12 @@ WORKDIR /etc/nginx
 #     ln -sf /dev/stderr /var/log/nginx/error.log
 
 COPY nginx/ /etc/nginx
+COPY ssl/ /etc/ssl
 RUN mkdir /www
 COPY ui/ /www
 
 # RUN nginx -t
 
 EXPOSE 80
+EXPOSE 443
 
