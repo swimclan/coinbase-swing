@@ -184,6 +184,7 @@ div.market-gain-wrapper {
   display: flex;
   justify-content: space-between;
   text-transform: uppercase;
+  font-size: 0.8rem;
 }
 
 button#force-walk {
