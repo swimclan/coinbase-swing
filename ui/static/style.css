@@ -172,9 +172,18 @@ div#notification.info {
 }
 
 div.gain-wrapper {
+  padding: 0 1rem;
+}
+
+div.personal-gain-wrapper {
   display: flex;
   justify-content: space-between;
-  padding: 0 1rem;
+}
+
+div.market-gain-wrapper {
+  display: flex;
+  justify-content: space-between;
+  text-transform: uppercase;
 }
 
 button#force-walk {

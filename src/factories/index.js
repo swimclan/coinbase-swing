@@ -14,6 +14,7 @@ const {
   convertTimeShortHandToMinutes,
   calculateRelativeVolume,
   calculateRSI,
+  meanArr,
 } = require("../lib/utils");
 
 const instances = {};
@@ -220,6 +221,8 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
     typeof error === "object" &&
       console.log(error.message || error.data || error.body);
   }
+
+  ret.marketGain = meanArr(ret.products.map((p) => p.change));
 
   portfolio.compute();
 

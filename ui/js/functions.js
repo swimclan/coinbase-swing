@@ -193,6 +193,9 @@ window.onload = async function main() {
   const portfolioRes = await fetch("/api/portfolio");
   const portfolio = await portfolioRes.json();
 
+  const marketStateRes = await fetch("/api/state");
+  const marketState = await marketStateRes.json();
+
   bootstrapInput(elements, "strategy", "select");
   bootstrapInput(elements, "wakeTime", "input");
   bootstrapInput(elements, "maxOrders", "input");
@@ -209,9 +212,27 @@ window.onload = async function main() {
   bootstrapInput(elements, "minLoss", "input");
   bootstrapInput(elements, "isTesting", "button");
 
+  // PERSONAL GAIN
   const gainDisplayEl = document.getElementById("gain-display");
   gainDisplayEl.classList.add(portfolio.gain >= 0 ? "green" : "red");
   gainDisplayEl.innerText = `${(portfolio.gain * 100).toFixed(2)}%`;
+
+  // MARKET GAIN
+  const marketGainDisplayEl = document.getElementById("market-gain");
+  const marketGain =
+    marketState.marketGain != null ? marketState.marketGain : 0;
+  marketGainDisplayEl.classList.add(
+    marketState.marketGain >= 0 ? "green" : "red"
+  );
+  marketGainDisplayEl.innerText = `${(marketGain * 100).toFixed(2)}%`;
+
+  // BTC GAIN
+  const btcGainDisplayEl = document.getElementById("btc-gain");
+  const btcProduct = marketState.products
+    ? marketState.products.find((prod) => prod.id === "BTC-USD")
+    : { change: 0 };
+  btcGainDisplayEl.classList.add(btcProduct.change >= 0 ? "green" : "red");
+  btcGainDisplayEl.innerText = `${(btcProduct.change * 100).toFixed(2)}%`;
 
   const applyButton = document.getElementById("apply");
   applyButton.addEventListener("click", sendConfig);
