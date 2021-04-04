@@ -235,6 +235,16 @@ app.get("/portfolio", (req, res, next) => {
   });
 });
 
+app.post("/gain", (req, res, next) => {
+  portfolio.setGain(+req.body.gain);
+  return res.status(200).json({
+    gain: portfolio.getGain(),
+    frozen: portfolio.isFrozen(),
+    balances: portfolio.getBalances(),
+    prices: portfolio.getPrices(),
+  });
+});
+
 app.post("/config", (req, res, next) => {
   const {
     wakeTime: wt,
@@ -296,7 +306,22 @@ app.get("/walk", async (req, res, next) => {
   const orderFactory = OrderFactory({ authClient, publicClient });
   await orderFactory.init();
   await executeWalkAway(portfolio, orderFactory);
-  return res.status(200).json({ result: true });
+  return res.status(200).json({
+    gain: portfolio.getGain(),
+    frozen: portfolio.isFrozen(),
+    balances: portfolio.getBalances(),
+    prices: portfolio.getPrices(),
+  });
+});
+
+app.get("/resume", (req, res, next) => {
+  portfolio.unfreeze();
+  return res.status(200).json({
+    gain: portfolio.getGain(),
+    frozen: portfolio.isFrozen(),
+    balances: portfolio.getBalances(),
+    prices: portfolio.getPrices(),
+  });
 });
 
 app.listen(process.env.NODE_PORT, () => {

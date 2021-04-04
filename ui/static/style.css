@@ -187,7 +187,12 @@ div.market-gain-wrapper {
   font-size: 0.8rem;
 }
 
-button#force-walk {
+span#market-slope {
+  margin-left: 3px;
+}
+
+button#force-walk,
+button#force-resume {
   text-transform: uppercase;
   background: none;
   color: #fff;
@@ -196,6 +201,12 @@ button#force-walk {
   border-radius: 2px;
   padding: 5px;
   height: 1.8rem;
+  display: none;
+}
+
+button#force-walk.on,
+button#force-resume.on {
+  display: inline;
 }
 
 div#notification.error {
@@ -214,6 +225,10 @@ div#gain-display {
 
 .red {
   color: red;
+}
+
+.orange {
+  color: orange;
 }
 
 label {

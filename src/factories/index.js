@@ -76,6 +76,9 @@ function PortfolioFactory() {
       initialValue = 0;
       freeze = false;
     },
+    setGain(newGain) {
+      gain = newGain;
+    },
     compute() {
       const newValue =
         Object.entries(prices).reduce((acc, [curr, price]) => {
@@ -95,6 +98,9 @@ function PortfolioFactory() {
     },
     freeze() {
       freeze = true;
+    },
+    unfreeze() {
+      freeze = false;
     },
     isFrozen() {
       return freeze;
@@ -223,6 +229,23 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
   }
 
   ret.marketGain = meanArr(ret.products.map((p) => p.change));
+  ret.marketSlope = meanArr(ret.products.map((p) => p.slope));
+  if (ret.marketSlope < -0.0001) {
+    // strong bear
+    ret.marketSlopeCategory = 1;
+  } else if (ret.marketSlope >= -0.0001 && ret.marketSlope < -0.00001) {
+    // moderate bear
+    ret.marketSlopeCategory = 2;
+  } else if (ret.marketSlope >= -0.00001 && ret.marketSlope < 0.00001) {
+    // flat
+    ret.marketSlopeCategory = 3;
+  } else if (ret.marketSlope >= 0.00001 && ret.marketSlope < 0.0001) {
+    // moderate bull
+    ret.marketSlopeCategory = 4;
+  } else {
+    // strong bull
+    ret.marketSlopeCategory = 5;
+  }
 
   portfolio.compute();
 

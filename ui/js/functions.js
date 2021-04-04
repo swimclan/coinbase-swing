@@ -21,6 +21,12 @@ let elements = {
   values: nullifyStateAttributes(state),
 };
 
+// Init walk/resume action buttons
+let actionButtons = {
+  walk: null,
+  resume: null,
+};
+
 function nullifyStateAttributes(state) {
   return {
     ...Object.keys(state).reduce((acc, attr) => {
@@ -146,9 +152,24 @@ function setNotification(message, level) {
 
 async function sendWalk() {
   const res = await fetch("/api/walk");
-  const status = await res.json();
-  console.log(status);
-  setNotification("Walked away successfully", "info");
+  const portfolio = await res.json();
+  setWalkButtons(portfolio.frozen);
+  if (portfolio.frozen) {
+    setNotification("Walked away successfully", "info");
+  } else {
+    setNotification("Walk away failed", "error");
+  }
+}
+
+async function sendResume() {
+  const res = await fetch("/api/resume");
+  const portfolio = await res.json();
+  setWalkButtons(portfolio.frozen);
+  if (!portfolio.frozen) {
+    setNotification("Resumed successfully", "info");
+  } else {
+    setNotification("Resume failed", "error");
+  }
 }
 
 async function sendConfig() {
@@ -182,6 +203,16 @@ async function sendConfig() {
     setNotification("New configuration successful", "info");
   } catch (err) {
     console.error("FAILED POST");
+  }
+}
+
+function setWalkButtons(frozen) {
+  if (frozen) {
+    actionButtons.walk.classList.remove("on");
+    actionButtons.resume.classList.add("on");
+  } else {
+    actionButtons.walk.classList.add("on");
+    actionButtons.resume.classList.remove("on");
   }
 }
 
@@ -234,11 +265,43 @@ window.onload = async function main() {
   btcGainDisplayEl.classList.add(btcProduct.change >= 0 ? "green" : "red");
   btcGainDisplayEl.innerText = `${(btcProduct.change * 100).toFixed(2)}%`;
 
+  // MARKET SLOPE
+  const marketSlopeEl = document.getElementById("market-slope");
+  marketSlopeEl.className = "";
+  switch (marketState.marketSlopeCategory) {
+    case 1:
+      marketSlopeEl.innerHTML = "&darr;";
+      marketSlopeEl.classList.add("red");
+      break;
+    case 2:
+      marketSlopeEl.innerHTML = "&searr;";
+      marketSlopeEl.classList.add("red");
+      break;
+    case 3:
+      marketSlopeEl.innerHTML = "&rarr;";
+      marketSlopeEl.classList.add("orange");
+      break;
+    case 4:
+      marketSlopeEl.innerHTML = "&nearr;";
+      marketSlopeEl.classList.add("green");
+      break;
+    case 5:
+      marketSlopeEl.innerHTML = "&uarr;";
+      marketSlopeEl.classList.add("green");
+      break;
+    default:
+      marketSlopeEl.innerHTML = "&rarr;";
+  }
+
   const applyButton = document.getElementById("apply");
   applyButton.addEventListener("click", sendConfig);
 
-  const walkButton = document.getElementById("force-walk");
-  walkButton.addEventListener("click", sendWalk);
+  actionButtons.walk = document.getElementById("force-walk");
+  actionButtons.walk.addEventListener("click", sendWalk);
+
+  actionButtons.resume = document.getElementById("force-resume");
+  actionButtons.resume.addEventListener("click", sendResume);
+  setWalkButtons(portfolio.frozen);
 
   const refreshButton = document.getElementById("refresh");
   refreshButton.addEventListener("click", () => window.location.reload());
