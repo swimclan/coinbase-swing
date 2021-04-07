@@ -260,7 +260,9 @@ window.onload = async function main() {
   // BTC GAIN
   const btcGainDisplayEl = document.getElementById("btc-gain");
   const btcProduct = marketState.products
-    ? marketState.products.find((prod) => prod.id === "BTC-USD")
+    ? marketState.products.find((prod) => prod.id === "BTC-USD") || {
+        change: 0,
+      }
     : { change: 0 };
   btcGainDisplayEl.classList.add(btcProduct.change >= 0 ? "green" : "red");
   btcGainDisplayEl.innerText = `${(btcProduct.change * 100).toFixed(2)}%`;
