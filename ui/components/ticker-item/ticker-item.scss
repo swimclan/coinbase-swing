@@ -1,0 +1,24 @@
+@import "../../global/sass/sass.scss";
+
+.ticker-item-container {
+  @include flex-row;
+  font-size: $font-md;
+  flex: 1;
+  margin-right: 0.3rem;
+
+  .ticker-item-label {
+    color: $white-1;
+    text-transform: uppercase;
+    margin-right: 0.4rem;
+  }
+
+  .red {
+    color: $red-1;
+  }
+  .green {
+    color: $green-1;
+  }
+  .orange {
+    color: $orange-1;
+  }
+}

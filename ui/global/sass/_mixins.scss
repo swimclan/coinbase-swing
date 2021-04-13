@@ -7,6 +7,13 @@
   align-items: center;
 }
 
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
 @mixin flex-centered {
   @include flex-row();
   justify-content: center;
@@ -25,4 +32,9 @@
   color: $white-1;
   background: none;
   text-transform: uppercase;
+
+  &:active {
+    background: $white-1;
+    color: $blue-1;
+  }
 }

@@ -15,7 +15,7 @@ const app = express();
 app.use(bodyParser.json());
 
 // CONFIG
-let wakeTime = process.argv[2] || "24h";
+let wakeTime = process.argv[2] || "2m";
 let fraction = +process.argv[3] || 0.75;
 let margin = +process.argv[4] || 0.01;
 let stopMargin = +process.argv[5] || 0.005;
@@ -229,6 +229,7 @@ app.get("/config", (req, res, next) => {
 app.get("/portfolio", (req, res, next) => {
   return res.status(200).json({
     gain: portfolio.getGain(),
+    value: portfolio.getValue(),
     frozen: portfolio.isFrozen(),
     balances: portfolio.getBalances(),
     prices: portfolio.getPrices(),

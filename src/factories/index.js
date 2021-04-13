@@ -52,6 +52,7 @@ function PortfolioFactory() {
   let balances = {};
   let prices = {};
   let freeze = false;
+  let newValue = 0;
 
   return {
     setBalances(account) {
@@ -80,7 +81,7 @@ function PortfolioFactory() {
       gain = newGain;
     },
     compute() {
-      const newValue =
+      newValue =
         Object.entries(prices).reduce((acc, [curr, price]) => {
           if (balances[curr] && balances[curr] > 0) {
             acc += balances[curr] * price;
@@ -95,6 +96,9 @@ function PortfolioFactory() {
     },
     getGain() {
       return gain;
+    },
+    getValue() {
+      return newValue;
     },
     freeze() {
       freeze = true;
