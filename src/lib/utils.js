@@ -167,6 +167,27 @@ function calcLimitPrice(buyPrice, margin) {
   return +buyPrice * (1 + +margin);
 }
 
+function computeSlopeScore(slope) {
+  let ret = 3;
+  if (slope < -0.0001) {
+    // strong bear
+    ret = 1;
+  } else if (slope >= -0.0001 && slope < -0.00001) {
+    // moderate bear
+    ret = 2;
+  } else if (slope >= -0.00001 && slope < 0.00001) {
+    // flat
+    ret = 3;
+  } else if (slope >= 0.00001 && slope < 0.0001) {
+    // moderate bull
+    ret = 4;
+  } else {
+    // strong bull
+    ret = 5;
+  }
+  return ret;
+}
+
 module.exports = {
   wait,
   sortByMetric,
@@ -187,4 +208,5 @@ module.exports = {
   calcAverageMoves,
   calculateRSI,
   calculateRelativeVolume,
+  computeSlopeScore,
 };

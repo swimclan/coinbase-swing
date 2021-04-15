@@ -4,6 +4,7 @@
   @include flex-space-between;
   padding: $app-padding;
   height: $header-height;
+  width: 100%;
   background: linear-gradient(180deg, $blue-1 0%, $blue-2 100%);
   color: $white-1;
 }

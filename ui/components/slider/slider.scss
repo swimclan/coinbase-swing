@@ -1,0 +1,22 @@
+@import "../../global/sass/sass.scss";
+
+.slider-container {
+  @include flex-space-between;
+  width: 100%;
+  height: $xl;
+  .slider-label,
+  .slider-value {
+    width: 20%;
+    font-size: $font-md;
+  }
+
+  .slider-label {
+    text-align: right;
+    width: 25%;
+  }
+
+  input {
+    flex-grow: 3;
+    margin: 0 $md;
+  }
+}

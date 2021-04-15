@@ -11,7 +11,7 @@ export default class Results extends Component {
   }
 
   render() {
-    const { gain, value } = this.props;
+    const { gain, value, tickers } = this.props;
     return (
       <div className="results-container">
         <div className="results-metrics">
@@ -23,9 +23,11 @@ export default class Results extends Component {
           </span>
         </div>
         <div className="results-ticker">
-          <TickerItem label="Market" value={0.00234} slope={3} />
-          <TickerItem label="BTC-USD" value={0.032234} slope={1} />
-          <TickerItem label="ETH-USD" value={-0.01234} slope={4} />
+          {Object.entries(tickers).map(([key, [gain, slope]]) => {
+            return (
+              <TickerItem label={key} value={gain || 0} slope={slope || 3} />
+            );
+          })}
         </div>
       </div>
     );

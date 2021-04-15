@@ -15,7 +15,7 @@ const app = express();
 app.use(bodyParser.json());
 
 // CONFIG
-let wakeTime = process.argv[2] || "2m";
+let wakeTime = process.argv[2] || 2;
 let fraction = +process.argv[3] || 0.75;
 let margin = +process.argv[4] || 0.01;
 let stopMargin = +process.argv[5] || 0.005;
@@ -24,7 +24,7 @@ let strategy = process.argv[7] || "change";
 let maxVwap = +process.argv[8] || -0.001;
 let minSlope = +process.argv[9] || 0.001;
 let isTesting = process.argv[10] === "test" || true;
-let maxOrders = process.argv[11] || 0;
+let maxOrders = process.argv[11] || 1;
 let maxVolatility = process.argv[12] || 0.01;
 let minLoss = process.argv[13] || -0.5;
 let maxRSI = process.argv[14] || 30;
@@ -46,7 +46,7 @@ function setClock() {
   if (interval) {
     interval.removeAllListeners();
   }
-  interval = Clock(wakeTime);
+  interval = Clock(`${wakeTime}m`);
   interval.on("tick", () => {
     if (!portfolio.isFrozen()) {
       main();

@@ -11,10 +11,10 @@ const {
   getTimeRange,
   calculateVolatility,
   calculateVWAP,
-  convertTimeShortHandToMinutes,
   calculateRelativeVolume,
   calculateRSI,
   meanArr,
+  computeSlopeScore,
 } = require("../lib/utils");
 
 const instances = {};
@@ -147,7 +147,7 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
       await wait(300);
 
       // Get price history for time series metrics for the last 5 hours
-      const period = convertTimeShortHandToMinutes(interval);
+      const period = +interval;
       const historicTimeRange = getTimeRange(new Date(), "Minutes", 300);
 
       let priceHistory = [];
@@ -219,6 +219,7 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
         compositeScore,
         vwap: relativeVwap,
         slope: relativeSlope,
+        slopeCategory: computeSlopeScore(relativeSlope),
         relativeVolume: -relativeVolume,
         periodSlope,
         rsi,
@@ -234,22 +235,7 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
 
   ret.marketGain = meanArr(ret.products.map((p) => p.change));
   ret.marketSlope = meanArr(ret.products.map((p) => p.slope));
-  if (ret.marketSlope < -0.0001) {
-    // strong bear
-    ret.marketSlopeCategory = 1;
-  } else if (ret.marketSlope >= -0.0001 && ret.marketSlope < -0.00001) {
-    // moderate bear
-    ret.marketSlopeCategory = 2;
-  } else if (ret.marketSlope >= -0.00001 && ret.marketSlope < 0.00001) {
-    // flat
-    ret.marketSlopeCategory = 3;
-  } else if (ret.marketSlope >= 0.00001 && ret.marketSlope < 0.0001) {
-    // moderate bull
-    ret.marketSlopeCategory = 4;
-  } else {
-    // strong bull
-    ret.marketSlopeCategory = 5;
-  }
+  ret.marketSlopeCategory = computeSlopeScore(ret.marketSlope);
 
   portfolio.compute();
 

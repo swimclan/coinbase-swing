@@ -12,11 +12,12 @@ export default class Header extends Component {
   }
 
   onClickRefresh(e) {
-    console.log("Refresh clicked");
+    window.location.reload();
   }
 
   onClickApply(e) {
-    console.log("Apply clicked");
+    const { onApplyClicked } = this.props;
+    onApplyClicked();
   }
 
   render() {

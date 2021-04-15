@@ -3,6 +3,7 @@
 .results-container {
   display: flex;
   @include flex-column;
+  width: 100%;
   background: $black-1;
   padding: $app-padding;
   overflow: hidden;

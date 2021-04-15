@@ -1,0 +1,30 @@
+@import "../../global/sass/sass.scss";
+
+.app-container {
+  @include flex-column;
+  height: 100%;
+  .app-header {
+    height: $header-height;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  .app-results {
+    height: auto;
+    width: 100%;
+  }
+
+  .app-config {
+    flex-grow: 4;
+    width: 100%;
+    overflow-y: auto;
+  }
+
+  .app-footer {
+    @include flex-row;
+    height: $header-height;
+    width: 100%;
+    padding: $app-padding;
+  }
+}

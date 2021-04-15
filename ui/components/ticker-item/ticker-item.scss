@@ -4,12 +4,12 @@
   @include flex-row;
   font-size: $font-md;
   flex: 1;
-  margin-right: 0.3rem;
+  margin-right: 0.2rem;
 
   .ticker-item-label {
     color: $white-1;
     text-transform: uppercase;
-    margin-right: 0.4rem;
+    margin-right: 0.2rem;
   }
 
   .red {

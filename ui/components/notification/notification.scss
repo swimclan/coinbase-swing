@@ -1,0 +1,21 @@
+@import "../../global/sass/sass.scss";
+
+.notification-container {
+  @include flex-centered;
+  width: 100%;
+  height: 0;
+  color: $white-1;
+  transition: height 0.2s linear;
+
+  &.show {
+    height: $header-height;
+  }
+
+  &.info {
+    background-color: $green-2;
+  }
+
+  &.error {
+    background-color: $red-2;
+  }
+}
