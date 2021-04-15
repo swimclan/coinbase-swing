@@ -1,0 +1,17 @@
+@import "../../global/sass/sass.scss";
+
+.select-container {
+  @include flex-row;
+  width: 100%;
+  height: $xl;
+  .select-label {
+    font-size: $font-md;
+    text-align: right;
+    width: 25%;
+  }
+
+  select {
+    flex-grow: 3;
+    margin-left: $md;
+  }
+}

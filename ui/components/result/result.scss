@@ -1,0 +1,25 @@
+@import "../../global/sass/sass.scss";
+
+.result-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+
+  .result-heading {
+    color: $white-1;
+    text-transform: uppercase;
+  }
+
+  .result-value {
+    font-size: $font-xl;
+
+    &.red {
+      color: $red-1;
+    }
+
+    &.green {
+      color: $green-1;
+    }
+  }
+}

@@ -1,0 +1,34 @@
+@import "../../global/sass/sass.scss";
+
+.config-container {
+  @include flex-column;
+  padding: $app-padding;
+}
+
+.config-header {
+  width: 100%;
+  margin-bottom: $md;
+  h3 {
+    font-size: $font-md;
+    text-transform: uppercase;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.config-body {
+  width: 100%;
+}
+
+button.testing-button {
+  @include button;
+  margin-top: $md;
+  width: 100%;
+  outline: none;
+  border: 2px solid $white-1;
+  border-radius: $border-radius-sm;
+  background-color: $black-1;
+  &.red {
+    background-color: $red-1;
+  }
+}

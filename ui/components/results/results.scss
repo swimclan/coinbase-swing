@@ -1,0 +1,25 @@
+@import "../../global/sass/sass.scss";
+
+.results-container {
+  display: flex;
+  @include flex-column;
+  width: 100%;
+  background: $black-1;
+  padding: $app-padding;
+  overflow: hidden;
+
+  .results-metrics {
+    width: 100%;
+    @include flex-space-between;
+    margin-bottom: $md;
+
+    .results-data {
+      flex: 1;
+    }
+  }
+
+  .results-ticker {
+    width: 100%;
+    @include flex-space-between;
+  }
+}

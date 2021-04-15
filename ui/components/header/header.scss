@@ -1,0 +1,25 @@
+@import "../../global/sass/sass";
+
+.header-container {
+  @include flex-space-between;
+  padding: $app-padding;
+  height: $header-height;
+  width: 100%;
+  background: linear-gradient(180deg, $blue-1 0%, $blue-2 100%);
+  color: $white-1;
+}
+
+.header-title-area {
+  flex: 7;
+  h2 {
+    font-size: $h2;
+  }
+}
+
+.header-button-area {
+  @include flex-space-between;
+  flex: 6;
+  button {
+    @include button;
+  }
+}

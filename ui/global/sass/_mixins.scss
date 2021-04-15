@@ -1,0 +1,41 @@
+@import "./variables";
+
+@mixin flex-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+@mixin flex-centered {
+  @include flex-row();
+  justify-content: center;
+}
+
+@mixin flex-space-between {
+  @include flex-row();
+  justify-content: space-between;
+}
+
+@mixin button {
+  @include flex-centered();
+  min-width: $xl;
+  padding: $xs;
+  border: 2px solid $white-1;
+  color: $white-1;
+  border-radius: $border-radius-sm;
+  background: none;
+  text-transform: uppercase;
+
+  &:active {
+    background: $white-1;
+    color: $blue-1;
+  }
+}
