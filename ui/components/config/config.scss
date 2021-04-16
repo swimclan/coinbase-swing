@@ -32,3 +32,17 @@ button.testing-button {
     background-color: $red-1;
   }
 }
+
+button.walk-button {
+  @include button;
+  margin-top: $md;
+  width: 100%;
+  outline: none;
+  border: 2px solid $white-1;
+  border-radius: $border-radius-sm;
+  background-color: $black-1;
+  &.active {
+    background-color: $white-1;
+    color: $black-1;
+  }
+}

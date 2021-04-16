@@ -35,10 +35,15 @@ export default class Config extends Component {
   }
 
   render() {
-    const { onValueChange, config } = this.props;
+    const { onValueChange, onWalkChanged, config, frozen } = this.props;
     const powerButtonClasses = classNames({
       ["testing-button"]: true,
       ["red"]: !config.isTesting,
+    });
+
+    const walkButtonClasses = classNames({
+      ["walk-button"]: true,
+      ["active"]: frozen,
     });
     return (
       <div className="config-container">
@@ -221,6 +226,9 @@ export default class Config extends Component {
             className={powerButtonClasses}
           >
             {config.isTesting ? "Off" : "On"}
+          </button>
+          <button onClick={onWalkChanged} className={walkButtonClasses}>
+            {frozen ? "Resume" : "Walk"}
           </button>
         </section>
       </div>

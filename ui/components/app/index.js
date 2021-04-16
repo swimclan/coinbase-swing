@@ -16,14 +16,20 @@ export default class App extends Component {
     };
     this.onValueChange = this.onValueChange.bind(this);
     this.onApplyClicked = this.onApplyClicked.bind(this);
+    this.onWalkChanged = this.onWalkChanged.bind(this);
   }
 
   async componentDidMount() {
     this.setState({
-      portfolio: await (await fetch("/api/portfolio")).json(),
-      state: await (await fetch("/api/state")).json(),
-      config: await (await fetch("/api/config")).json(),
+      portfolio: await this.fetchData("portfolio"),
+      state: await this.fetchData("state"),
+      config: await this.fetchData("config"),
     });
+  }
+
+  async fetchData(type) {
+    const res = await fetch(`/api/${type}`);
+    return await res.json();
   }
 
   onValueChange(name, value) {
@@ -59,7 +65,27 @@ export default class App extends Component {
       this._postNotification("New config applied", "info");
       console.log(await res.json());
     } catch (err) {
+      console.error(err);
       this._postNotification("Config update failed", "error");
+    }
+  }
+
+  async onWalkChanged() {
+    const { portfolio } = this.state;
+    const action = portfolio.frozen ? "resume" : "walk";
+    try {
+      const res = await (
+        await fetch(`/api/${portfolio.frozen ? "resume" : "walk"}`)
+      ).json();
+      this._postNotification(
+        `Successfully ${action}${action === "resume" ? "" : "e"}d`,
+        "info"
+      );
+      console.log(res);
+      this.setState({ portfolio: await this.fetchData("portfolio") });
+    } catch (err) {
+      console.error(err);
+      this._postNotification(`Sorry ${action} failed`);
     }
   }
 
@@ -92,7 +118,12 @@ export default class App extends Component {
           />
         </aside>
         <section className="app-config">
-          <Config config={config} onValueChange={this.onValueChange} />
+          <Config
+            config={config}
+            onValueChange={this.onValueChange}
+            onWalkChanged={this.onWalkChanged}
+            frozen={portfolio.frozen}
+          />
         </section>
         <footer className="app-footer">&copy;2021 Groundwire LLC.</footer>
       </div>
