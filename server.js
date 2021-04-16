@@ -29,10 +29,13 @@ let maxVolatility = process.argv[12] || 0.01;
 let minLoss = process.argv[13] || -0.5;
 let maxRSI = process.argv[14] || 30;
 let minRelVol = process.argv[15] || 5;
+let maxRounds = process.argv[16] || 100;
 
 // Stores for API retrieval
 let lastState = {};
 let lastOrders = [];
+
+const orderTracker = {};
 
 // Build Coinbase clients
 const { public: publicClient, auth: authClient } = CoinbaseFactory(process.env);
@@ -171,6 +174,13 @@ async function main() {
     return;
   }
 
+  // Check to see if there are stale orders in the market and cancel/abandon them
+  const abandonedOrders = await orderFactory.abandonStale(
+    orderTracker,
+    maxRounds
+  );
+  console.log("Stale orders detected abandoned", abandonedOrders);
+
   let buyOrder;
   try {
     buyOrder = await executeBuy(state, orderFactory, fraction, strategy);
@@ -223,6 +233,7 @@ app.get("/config", (req, res, next) => {
     minLoss,
     maxRSI,
     minRelVol,
+    maxRounds,
   });
 });
 
@@ -246,6 +257,10 @@ app.post("/gain", (req, res, next) => {
   });
 });
 
+app.get("/orders", (req, res, next) => {
+  return res.status(200).json([...lastOrders]);
+});
+
 app.post("/config", (req, res, next) => {
   const {
     wakeTime: wt,
@@ -262,6 +277,7 @@ app.post("/config", (req, res, next) => {
     minLoss: ml,
     maxRSI: mr,
     minRelVol: mrv,
+    maxRounds: mxr,
   } = req.body;
 
   wt && (wakeTime = wt);
@@ -278,6 +294,7 @@ app.post("/config", (req, res, next) => {
   ml && (minLoss = ml);
   mr && (maxRSI = mr);
   mrv && (minRelVol = mrv);
+  mxr && (maxRounds = mxr);
 
   setClock();
 
@@ -296,6 +313,7 @@ app.post("/config", (req, res, next) => {
     minLoss,
     maxRSI,
     minRelVol,
+    maxRounds,
   });
 });
 

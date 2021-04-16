@@ -21,6 +21,7 @@ function returnConfig(
     minLoss,
     maxRSI,
     minRelVol,
+    maxRounds,
   }
 ) {
   return res.status(200).json({
@@ -38,6 +39,7 @@ function returnConfig(
     minLoss,
     maxRSI,
     minRelVol,
+    maxRounds,
   });
 }
 

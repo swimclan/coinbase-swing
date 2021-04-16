@@ -313,6 +313,31 @@ function OrderFactory({ authClient, publicClient }) {
       }
       return ret;
     },
+    async abandonStale(orderTracker, maxRounds) {
+      let ret = [];
+      for (const currentOrder of currentOrders) {
+        if (!orderTracker[currentOrder.id]) {
+          orderTracker[currentOrder.id] = 1;
+        } else {
+          orderTracker[currentOrder.id]++;
+        }
+        if (maxRounds > 0 && orderTracker[currentOrder.id] > maxRounds) {
+          const ticker = await publicClient.getProductTicker(
+            currentOrder.product_id
+          );
+          const currentTickerPrice = +ticker.price;
+          await wait(500);
+          await authClient.cancelOrder(currentOrder.id);
+          const newSellOrder = await this.sell({
+            price: currentTickerPrice,
+            size: +currentOrder.size,
+            product_id: currentOrder.product_id,
+            margin: 0.001,
+          });
+          ret.push(newSellOrder);
+        }
+      }
+    },
     async cleanOrphans(crypto, products) {
       for (const [currency, amount] of Object.entries(crypto)) {
         await wait(500);

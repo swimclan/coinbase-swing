@@ -78,6 +78,18 @@ export default class Config extends Component {
             onValueChange={onValueChange}
           />
           <Slider
+            name="maxRounds"
+            min={0}
+            max={100}
+            step={1}
+            sig={0}
+            factor={1}
+            unit=""
+            value={config.maxRounds}
+            label="Max rounds"
+            onValueChange={onValueChange}
+          />
+          <Slider
             name="maxOrders"
             min={1}
             max={10}
