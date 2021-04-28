@@ -22,6 +22,7 @@ function returnConfig(
     maxRSI,
     minRelVol,
     maxRounds,
+    minMarketSlopeCategory,
   }
 ) {
   return res.status(200).json({
@@ -40,6 +41,7 @@ function returnConfig(
     maxRSI,
     minRelVol,
     maxRounds,
+    minMarketSlopeCategory,
   });
 }
 

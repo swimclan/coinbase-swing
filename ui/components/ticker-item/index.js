@@ -2,6 +2,8 @@ import classNames from "classnames";
 import React, { Component } from "react";
 import "./ticker-item.scss";
 
+import { renderTrendIcon } from "../../global/utils";
+
 export default class TickerItem extends Component {
   constructor(props) {
     super(props);
@@ -13,18 +15,7 @@ export default class TickerItem extends Component {
   }
 
   _renderTrend(val) {
-    switch (val) {
-      case 1:
-        return <span>&#8595;&#8595;</span>;
-      case 2:
-        return <span>&#8595;</span>;
-      case 3:
-        return <span>&#8594;</span>;
-      case 4:
-        return <span>&#8593;</span>;
-      case 5:
-        return <span>&#8593;&#8593;</span>;
-    }
+    return renderTrendIcon(val);
   }
 
   render() {

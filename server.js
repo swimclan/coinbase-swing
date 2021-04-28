@@ -30,6 +30,7 @@ let minLoss = process.argv[13] || -0.5;
 let maxRSI = process.argv[14] || 30;
 let minRelVol = process.argv[15] || 5;
 let maxRounds = process.argv[16] || 100;
+let minMarketSlopeCategory = process.argv[17] || 3;
 
 // Stores for API retrieval
 let lastState = {};
@@ -93,6 +94,11 @@ async function executeBuy(state, orderFactory, fraction, strategy) {
 
   if (!eligibleProducts.length) {
     console.log("Nothing looks good...  Try again later");
+    return null;
+  }
+
+  if (sortedState.marketSlopeCategory < minMarketSlopeCategory) {
+    console.log("Market is too bearish... Try again later");
     return null;
   }
   const productToBuy = eligibleProducts[0];
@@ -234,6 +240,7 @@ app.get("/config", (req, res, next) => {
     maxRSI,
     minRelVol,
     maxRounds,
+    minMarketSlopeCategory,
   });
 });
 
@@ -278,6 +285,7 @@ app.post("/config", (req, res, next) => {
     maxRSI: mr,
     minRelVol: mrv,
     maxRounds: mxr,
+    minMarketSlopeCategory: msc,
   } = req.body;
 
   wt && (wakeTime = wt);
@@ -295,6 +303,7 @@ app.post("/config", (req, res, next) => {
   mr && (maxRSI = mr);
   mrv && (minRelVol = mrv);
   mxr && (maxRounds = mxr);
+  msc && (minMarketSlopeCategory = msc);
 
   setClock();
 
@@ -314,6 +323,7 @@ app.post("/config", (req, res, next) => {
     maxRSI,
     minRelVol,
     maxRounds,
+    minMarketSlopeCategory,
   });
 });
 

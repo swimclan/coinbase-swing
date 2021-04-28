@@ -31,6 +31,7 @@ export default class Slider extends Component {
       label,
       sig,
       step,
+      valueRenderer,
     } = this.props;
     return (
       <div className="slider-container">
@@ -44,12 +45,11 @@ export default class Slider extends Component {
           value={value}
           onInput={this.onSliderChange}
         />
-        <span className="slider-value">{`${this._renderValue(
-          value,
-          factor,
-          unit,
-          sig
-        )}`}</span>
+        <span className="slider-value">
+          {valueRenderer
+            ? valueRenderer(value)
+            : `${this._renderValue(value, factor, unit, sig)}`}
+        </span>
       </div>
     );
   }

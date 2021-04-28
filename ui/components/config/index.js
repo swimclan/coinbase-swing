@@ -5,6 +5,8 @@ import "./config.scss";
 import Slider from "../slider";
 import Select from "../select";
 
+import { renderTrendIcon } from "../../global/utils";
+
 /*
     wakeTime,
     fraction,
@@ -88,6 +90,19 @@ export default class Config extends Component {
             value={config.maxRounds}
             label="Max rounds"
             onValueChange={onValueChange}
+          />
+          <Slider
+            name="minMarketSlopeCategory"
+            min={1}
+            max={5}
+            step={1}
+            sig={0}
+            factor={1}
+            unit=""
+            value={config.minMarketSlopeCategory}
+            label="Min market"
+            onValueChange={onValueChange}
+            valueRenderer={renderTrendIcon}
           />
           <Slider
             name="maxOrders"
