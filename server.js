@@ -344,7 +344,7 @@ app.get("/walk", async (req, res, next) => {
 });
 
 app.get("/resume", (req, res, next) => {
-  portfolio.unfreeze();
+  portfolio.reset();
   return res.status(200).json({
     gain: portfolio.getGain(),
     frozen: portfolio.isFrozen(),
