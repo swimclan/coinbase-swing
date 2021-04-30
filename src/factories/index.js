@@ -141,10 +141,10 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
     for (const targetProduct of targetProducts) {
       const { id, inc, min } = targetProduct;
       const stats = await publicClient.getProduct24HrStats(id);
-      await wait(300);
+      await wait(500);
       const ticker = await publicClient.getProductTicker(id);
       portfolio.setTickerPrice(id, ticker);
-      await wait(300);
+      await wait(500);
 
       // Get price history for time series metrics for the last 5 hours
       const period = +interval;
@@ -166,7 +166,7 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
           console.error(err.data || err.message || err);
         }
         retryCount++;
-        await wait(300);
+        await wait(500);
       }
 
       if (!priceHistory.length) {
