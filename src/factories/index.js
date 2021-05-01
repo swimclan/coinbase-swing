@@ -161,11 +161,11 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
           })
         );
         retryCount++;
-        await wait(500);
+        await wait(300);
       }
 
       if (!priceHistory.length) {
-        console.error("priceHistory not retrieved...");
+        console.error("priceHistory not retrieved:", id);
       }
 
       // Compute percent change
@@ -228,8 +228,12 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
       console.log(error.message || error.data || error.body);
   }
 
-  ret.marketGain = meanArr(ret.products.map((p) => p.change));
-  ret.marketSlope = meanArr(ret.products.map((p) => p.slope));
+  ret.marketGain = meanArr(
+    ret.products.filter((p) => p.price).map((p) => p.change)
+  );
+  ret.marketSlope = meanArr(
+    ret.products.filter((p) => p.price).map((p) => p.slope)
+  );
   ret.marketSlopeCategory = computeSlopeScore(ret.marketSlope);
 
   portfolio.compute();
