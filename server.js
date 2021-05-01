@@ -174,18 +174,18 @@ async function main() {
   const resells = await orderFactory.remargin(margin, stopMargin);
   console.log(`Remargined ${resells.length} orders`);
 
-  // Check to see if you are under max allowed open orders
-  if (orderFactory.getAllOrders().length >= maxOrders && maxOrders > 0) {
-    console.log("Max orders reached.  New orders not allowed at this time...");
-    return;
-  }
-
   // Check to see if there are stale orders in the market and cancel/abandon them
   const abandonedOrders = await orderFactory.abandonStale(
     orderTracker,
     maxRounds
   );
   console.log("Stale orders detected abandoned", abandonedOrders);
+
+  // Check to see if you are under max allowed open orders
+  if (orderFactory.getAllOrders().length >= maxOrders && maxOrders > 0) {
+    console.log("Max orders reached.  New orders not allowed at this time...");
+    return;
+  }
 
   let buyOrder;
   try {
