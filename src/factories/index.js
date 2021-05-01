@@ -152,25 +152,20 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
 
       let priceHistory = [];
       let retryCount = 0;
-      while (!priceHistory.length && retryCount < 50) {
-        try {
-          priceHistory = _reverse(
-            await publicClient.getProductHistoricRates(id, {
-              start: historicTimeRange[1],
-              end: historicTimeRange[0],
-              granularity: 60,
-            })
-          );
-        } catch (err) {
-          console.log("priceHistory failed");
-          console.error(err.data || err.message || err);
-        }
+      while (!priceHistory.length && retryCount < 100) {
+        priceHistory = _reverse(
+          await publicClient.getProductHistoricRates(id, {
+            start: historicTimeRange[1],
+            end: historicTimeRange[0],
+            granularity: 60,
+          })
+        );
         retryCount++;
         await wait(500);
       }
 
       if (!priceHistory.length) {
-        throw new Error("priceHistory not retrieved.  Bailing...");
+        console.error("priceHistory not retrieved...");
       }
 
       // Compute percent change
