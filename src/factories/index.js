@@ -337,6 +337,7 @@ function OrderFactory({ authClient, publicClient }) {
           ret.push(newSellOrder);
         }
       }
+      return ret;
     },
     async cleanOrphans(crypto, products) {
       for (const [currency, amount] of Object.entries(crypto)) {

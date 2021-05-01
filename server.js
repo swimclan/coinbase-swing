@@ -179,7 +179,11 @@ async function main() {
     orderTracker,
     maxRounds
   );
-  console.log("Stale orders detected abandoned", abandonedOrders);
+  abandonedOrders.length &&
+    console.log(
+      "Stale orders detected abandoned",
+      abandonedOrders.map((o) => o.product_id).join(", ")
+    );
 
   // Check to see if you are under max allowed open orders
   if (orderFactory.getAllOrders().length >= maxOrders && maxOrders > 0) {
