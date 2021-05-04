@@ -299,7 +299,7 @@ function OrderFactory({ authClient, publicClient }) {
             await authClient.cancelOrder(currentOrder.id);
             const newSellOrder = await this.sell({
               price: currentTickerPrice,
-              size: +currentOrder.size,
+              size: +currentOrder.size - +currentOrder.filled_size,
               product_id: currentOrder.product_id,
               margin: 0.001,
             });

@@ -191,11 +191,12 @@ async function main() {
     return;
   }
 
+  // Place the market buy
   let buyOrder;
   try {
     buyOrder = await executeBuy(state, orderFactory, fraction, strategy);
   } catch (err) {
-    console.error(err);
+    console.error(typeof err === "object" ? err.data || err.message : err);
     buyOrder = null;
   }
 
@@ -203,6 +204,8 @@ async function main() {
     console.log("No buy opportunity or failure occured");
     return;
   }
+
+  // Place the sell order
   let sellOrder,
     sold = false;
   while (!sold) {
@@ -214,8 +217,8 @@ async function main() {
       // do nothing
     }
   }
-  sellOrder && console.log("Sold...");
-  sellOrder && console.log(sellOrder);
+  sellOrder && console.log("Limit sell placed:");
+  sellOrder && console.log(JSON.stringify(sellOrder));
 }
 
 /* API SECTION */
