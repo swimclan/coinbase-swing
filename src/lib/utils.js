@@ -23,6 +23,7 @@ function returnConfig(
     minRelVol,
     maxRounds,
     minMarketSlopeCategory,
+    maxRank,
   }
 ) {
   return res.status(200).json({
@@ -42,6 +43,7 @@ function returnConfig(
     minRelVol,
     maxRounds,
     minMarketSlopeCategory,
+    maxRank,
   });
 }
 

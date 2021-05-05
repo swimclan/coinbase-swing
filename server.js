@@ -7,6 +7,7 @@ const {
   StateFactory,
   OrderFactory,
   PortfolioFactory,
+  MarketCapFactory,
 } = require("./src/factories/index");
 const { sortByMetric, wait, returnConfig } = require("./src/lib/utils");
 const Clock = require("interval-clock");
@@ -31,15 +32,22 @@ let maxRSI = process.argv[14] || 30;
 let minRelVol = process.argv[15] || 5;
 let maxRounds = process.argv[16] || 100;
 let minMarketSlopeCategory = process.argv[17] || 3;
+let maxRank = process.argv[18] || 10;
 
 // Stores for API retrieval
 let lastState = {};
 let lastOrders = [];
-
 const orderTracker = {};
+let mktCapResponse;
 
 // Build Coinbase clients
 const { public: publicClient, auth: authClient } = CoinbaseFactory(process.env);
+
+// Build CoinMarketCap client
+const mktcapFactory = MarketCapFactory(process.env);
+(async function () {
+  mktCapResponse = await mktcapFactory.getTopCoins(maxRank);
+})();
 
 // Build portfolio tracker
 const portfolio = PortfolioFactory();
@@ -60,37 +68,53 @@ function setClock() {
   });
 }
 
-// Set 24 hour clock for reseting portfolio tracking
+// Set 24 hour clock for reseting portfolio tracking and getting latest marketcap ranks
 const dailyClock = Clock("24h");
-dailyClock.on("tick", portfolio.reset);
+dailyClock.on("tick", async () => {
+  portfolio.reset();
+  mktCapResponse = await mktcapFactory.getTopCoins(maxRank);
+});
 
-function getEligibleByStrategy(products) {
-  return products.filter((prod) => {
-    const passRSI = prod.rsi <= maxRSI;
-    if (strategy === "compositeScore") {
-      return passRSI && prod.vwap <= maxVwap && prod.slope >= minSlope;
-    } else if (strategy === "vwap") {
-      return passRSI && prod.vwap <= maxVwap;
-    } else if (strategy === "slope") {
-      return passRSI && prod.slope >= minSlope;
-    } else if (strategy === "change") {
-      return passRSI && prod.change >= minLoss;
-    } else if (strategy === "volatility") {
-      return passRSI && Math.abs(prod.volatility) <= maxVolatility;
-    } else if (strategy === "relativeVolume") {
-      return (
-        passRSI &&
-        Math.abs(prod.relativeVolume) > minRelVol &&
-        prod.periodSlope > 0
-      );
-    }
-    return true;
-  });
+function getEligibleByStrategy(products, topCoins) {
+  return products
+    .filter(({ id }) => {
+      const symbolMatcher = id.match(new RegExp(`([A-Z0-9]+)-USD`));
+      const crypto = symbolMatcher ? symbolMatcher[1] : null;
+      return !!topCoins.find((coin) => coin.symbol === crypto);
+    })
+    .filter((prod) => {
+      const passRSI = prod.rsi <= maxRSI;
+      if (strategy === "compositeScore") {
+        return passRSI && prod.vwap <= maxVwap && prod.slope >= minSlope;
+      } else if (strategy === "vwap") {
+        return passRSI && prod.vwap <= maxVwap;
+      } else if (strategy === "slope") {
+        return passRSI && prod.slope >= minSlope;
+      } else if (strategy === "change") {
+        return passRSI && prod.change >= minLoss;
+      } else if (strategy === "volatility") {
+        return passRSI && Math.abs(prod.volatility) <= maxVolatility;
+      } else if (strategy === "relativeVolume") {
+        return (
+          passRSI &&
+          Math.abs(prod.relativeVolume) > minRelVol &&
+          prod.periodSlope > 0
+        );
+      }
+      return true;
+    });
 }
 
-async function executeBuy(state, orderFactory, fraction, strategy) {
+async function executeBuy(
+  state,
+  orderFactory,
+  fraction,
+  strategy,
+  mktCapResponse
+) {
+  const topCoins = mktCapResponse.data;
   const sortedState = sortByMetric(state.get(), strategy);
-  let eligibleProducts = getEligibleByStrategy(sortedState.products);
+  let eligibleProducts = getEligibleByStrategy(sortedState.products, topCoins);
 
   if (!eligibleProducts.length) {
     console.log("Nothing looks good...  Try again later");
@@ -195,7 +219,13 @@ async function main() {
   // Place the market buy
   let buyOrder;
   try {
-    buyOrder = await executeBuy(state, orderFactory, fraction, strategy);
+    buyOrder = await executeBuy(
+      state,
+      orderFactory,
+      fraction,
+      strategy,
+      mktCapResponse
+    );
   } catch (err) {
     console.error(typeof err === "object" ? err.data || err.message : err);
     buyOrder = null;
@@ -249,6 +279,7 @@ app.get("/config", (req, res, next) => {
     minRelVol,
     maxRounds,
     minMarketSlopeCategory,
+    maxRank,
   });
 });
 
@@ -294,6 +325,7 @@ app.post("/config", (req, res, next) => {
     minRelVol: mrv,
     maxRounds: mxr,
     minMarketSlopeCategory: msc,
+    maxRank: mrk,
   } = req.body;
 
   wt && (wakeTime = wt);
@@ -312,6 +344,7 @@ app.post("/config", (req, res, next) => {
   mrv && (minRelVol = mrv);
   mxr && (maxRounds = mxr);
   msc && (minMarketSlopeCategory = msc);
+  mrk && (maxRank = mrk);
 
   setClock();
 
@@ -332,6 +365,7 @@ app.post("/config", (req, res, next) => {
     minRelVol,
     maxRounds,
     minMarketSlopeCategory,
+    maxRank,
   });
 });
 

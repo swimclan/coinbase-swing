@@ -1,4 +1,5 @@
 const CoinbasePro = require("coinbase-pro");
+const rp = require("request-promise");
 const _reverse = require("lodash/reverse");
 const { exchange } = require("../lib/constants");
 const regression = require("regression");
@@ -373,9 +374,34 @@ function OrderFactory({ authClient, publicClient }) {
   };
 }
 
+function MarketCapFactory(env) {
+  const { COINMARKETCAP_API_KEY: apiKey } = env;
+  const requestOptions = {
+    method: "GET",
+    uri: "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest",
+    qs: {
+      start: "1",
+      convert: "USD",
+    },
+    headers: {
+      "X-CMC_PRO_API_KEY": apiKey,
+    },
+    json: true,
+    gzip: true,
+  };
+
+  return {
+    async getTopCoins(limit) {
+      requestOptions.qs.limit = limit.toString();
+      return await rp(requestOptions);
+    },
+  };
+}
+
 module.exports = {
   CoinbaseFactory,
   StateFactory,
   OrderFactory,
   PortfolioFactory,
+  MarketCapFactory,
 };
