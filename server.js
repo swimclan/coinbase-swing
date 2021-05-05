@@ -146,6 +146,7 @@ async function main() {
     portfolio,
   });
   const orderFactory = OrderFactory({ authClient, publicClient });
+  await wait(500);
   await orderFactory.init();
 
   // Assign latest current orders to global lastOrders for api retrieval

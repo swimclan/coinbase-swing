@@ -116,6 +116,7 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
   let ret = { cash: 0, products: [], crypto: {} };
   try {
     const products = await publicClient.getProducts();
+    await wait(500);
     const account = await authClient.getAccount();
     portfolio.setBalances(account);
     const usdInstrument = account.find((inst) => inst.currency === "USD") || {};
@@ -161,7 +162,7 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
           })
         );
         retryCount++;
-        await wait(300);
+        await wait(500);
       }
 
       if (!priceHistory.length) {
@@ -340,9 +341,9 @@ function OrderFactory({ authClient, publicClient }) {
     },
     async cleanOrphans(crypto, products) {
       for (const [currency, amount] of Object.entries(crypto)) {
-        await wait(500);
         const product_id = `${currency}-USD`;
         const ticker = await publicClient.getProductTicker(product_id);
+        await wait(500);
         try {
           const product = products.find((prod) => prod.id === product_id);
           if (product && +amount >= product.min) {
