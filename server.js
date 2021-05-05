@@ -16,7 +16,7 @@ const app = express();
 app.use(bodyParser.json());
 
 // CONFIG
-let wakeTime = process.argv[2] || 2;
+let wakeTime = process.argv[2] || 10;
 let fraction = +process.argv[3] || 0.75;
 let margin = +process.argv[4] || 0.01;
 let stopMargin = +process.argv[5] || 0.005;
