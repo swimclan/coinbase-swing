@@ -117,8 +117,9 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
   let ret = { cash: 0, products: [], crypto: {} };
   try {
     const products = await publicClient.getProducts();
-    await wait(500);
+    await wait(300);
     const account = await authClient.getAccount();
+    await wait(300);
     portfolio.setBalances(account);
     const usdInstrument = account.find((inst) => inst.currency === "USD") || {};
     ret.crypto = account
@@ -143,11 +144,10 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
     for (const targetProduct of targetProducts) {
       const { id, inc, min } = targetProduct;
       const stats = await publicClient.getProduct24HrStats(id);
-      await wait(500);
+      await wait(300);
       const ticker = await publicClient.getProductTicker(id);
+      await wait(300);
       portfolio.setTickerPrice(id, ticker);
-      await wait(500);
-
       // Get price history for time series metrics for the last 5 hours
       const period = +interval;
       const historicTimeRange = getTimeRange(new Date(), "Minutes", 300);
@@ -162,8 +162,8 @@ async function StateFactory({ publicClient, authClient, interval, portfolio }) {
             granularity: 60,
           })
         );
+        await wait(300);
         retryCount++;
-        await wait(500);
       }
 
       if (!priceHistory.length) {
@@ -253,6 +253,7 @@ function OrderFactory({ authClient, publicClient }) {
   return {
     async init() {
       currentOrders = await authClient.getOrders();
+      await wait(300);
     },
     async buy({ product, cash, fraction }) {
       const { id: product_id, price, min, inc } = product;
@@ -263,16 +264,18 @@ function OrderFactory({ authClient, publicClient }) {
       if (size === 0) {
         return null;
       }
-      return await authClient.placeOrder({
+      const setOrder = await authClient.placeOrder({
         side: "buy",
         type: "market",
         product_id,
         size,
       });
+      await wait(300);
+      return setOrder;
     },
     async sell({ price, size, product_id, margin }) {
       const limitPrice = calcLimitPrice(price || targetPrice, margin);
-      return await authClient.placeOrder({
+      const setOrder = await authClient.placeOrder({
         side: "sell",
         type: "limit",
         price: limitPrice.toFixed(2),
@@ -280,6 +283,8 @@ function OrderFactory({ authClient, publicClient }) {
         product_id,
         post_only: false,
       });
+      await wait(300);
+      return setOrder;
     },
     getAllOrders() {
       return currentOrders;
@@ -291,7 +296,7 @@ function OrderFactory({ authClient, publicClient }) {
           const ticker = await publicClient.getProductTicker(
             currentOrder.product_id
           );
-          await wait(500);
+          await wait(300);
           const currentLimitPrice = +currentOrder.price;
           const currentTickerPrice = +ticker.price;
           const originalPrice = currentLimitPrice / (1 + margin);
@@ -299,7 +304,7 @@ function OrderFactory({ authClient, publicClient }) {
           const shouldStop = force || currentTickerPrice <= stopPrice;
           if (shouldStop) {
             await authClient.cancelOrder(currentOrder.id);
-            await wait(500);
+            await wait(300);
             const newSellOrder = await this.sell({
               price: currentTickerPrice,
               size: +currentOrder.size - +currentOrder.filled_size,
@@ -327,9 +332,10 @@ function OrderFactory({ authClient, publicClient }) {
           const ticker = await publicClient.getProductTicker(
             currentOrder.product_id
           );
+          await wait(300);
           const currentTickerPrice = +ticker.price;
-          await wait(500);
           await authClient.cancelOrder(currentOrder.id);
+          await wait(300);
           const newSellOrder = await this.sell({
             price: currentTickerPrice,
             size: +currentOrder.size,
@@ -345,7 +351,7 @@ function OrderFactory({ authClient, publicClient }) {
       for (const [currency, amount] of Object.entries(crypto)) {
         const product_id = `${currency}-USD`;
         const ticker = await publicClient.getProductTicker(product_id);
-        await wait(500);
+        await wait(300);
         try {
           const product = products.find((prod) => prod.id === product_id);
           if (product && +amount >= product.min) {
@@ -370,7 +376,9 @@ function OrderFactory({ authClient, publicClient }) {
       }
     },
     async cancel(id) {
-      return await authClient.cancelOrder(id);
+      const canceledOrder = await authClient.cancelOrder(id);
+      await wait(300);
+      return canceledOrder;
     },
   };
 }

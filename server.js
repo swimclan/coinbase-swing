@@ -142,11 +142,11 @@ async function executeSell(buyOrder, orderFactory, margin) {
   let tryCount = 1;
   while (!filled && tryCount <= 100) {
     completedOrder = await authClient.getOrder(buyOrder.id);
+    await wait(300);
     if (+completedOrder.filled_size > 0) {
       filled = true;
     }
     tryCount++;
-    await wait(500);
   }
   if (!filled) {
     throw new Error("Couldnt execute the sell, trying again");
@@ -170,7 +170,6 @@ async function main() {
     portfolio,
   });
   const orderFactory = OrderFactory({ authClient, publicClient });
-  await wait(500);
   await orderFactory.init();
 
   // Assign latest current orders to global lastOrders for api retrieval
