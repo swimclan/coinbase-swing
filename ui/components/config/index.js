@@ -69,7 +69,7 @@ export default class Config extends Component {
           />
           <Slider
             name="wakeTime"
-            min={2}
+            min={5}
             max={60}
             step={1}
             sig={0}

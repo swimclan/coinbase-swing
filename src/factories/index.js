@@ -299,6 +299,7 @@ function OrderFactory({ authClient, publicClient }) {
           const shouldStop = force || currentTickerPrice <= stopPrice;
           if (shouldStop) {
             await authClient.cancelOrder(currentOrder.id);
+            await wait(500);
             const newSellOrder = await this.sell({
               price: currentTickerPrice,
               size: +currentOrder.size - +currentOrder.filled_size,
