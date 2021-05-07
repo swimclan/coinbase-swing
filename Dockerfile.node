@@ -8,6 +8,6 @@ WORKDIR /opt/app/coinbase-swing
 COPY . .
 RUN npm i
 
-CMD ["forever", "start", "server.js"]
+CMD ["forever", "server.js"]
 
 EXPOSE 3333
