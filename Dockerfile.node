@@ -2,11 +2,12 @@ FROM mhart/alpine-node
 
 # Install bash
 RUN apk update && apk add bash
+RUN npm i -g forever
 
 WORKDIR /opt/app/coinbase-swing
 COPY . .
 RUN npm i
 
-CMD ["node", "server.js"]
+CMD ["forever", "start", "server.js"]
 
 EXPOSE 3333
