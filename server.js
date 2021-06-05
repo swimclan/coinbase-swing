@@ -113,7 +113,7 @@ async function executeBuy(
   mktCapResponse
 ) {
   const topCoins = mktCapResponse.data;
-  const sortedState = sortByMetric(state.get(), strategy);
+  const sortedState = sortByMetric(state, strategy);
   let eligibleProducts = getEligibleByStrategy(sortedState.products, topCoins);
 
   if (!eligibleProducts.length) {
@@ -121,10 +121,6 @@ async function executeBuy(
     return null;
   }
 
-  if (sortedState.marketSlopeCategory < minMarketSlopeCategory) {
-    console.log("Market is too bearish... Try again later");
-    return null;
-  }
   const productToBuy = eligibleProducts[0];
 
   console.log(`Buying...`);
@@ -182,8 +178,19 @@ async function main() {
     return;
   }
 
+  const currentState = state.get();
+
+  if (
+    currentState.marketSlopeCategory < minMarketSlopeCategory ||
+    lastState.marketSlopeCategory > currentState.marketSlopeCategory
+  ) {
+    console.log("Market transitioned to bearish... bailing out of positions.");
+    await orderFactory.remargin(margin, stopMargin, true);
+    return;
+  }
+
   // Assign latest state to global lastState for api retrieval
-  lastState = state.get();
+  lastState = { ...currentState };
 
   if (isTesting) {
     console.info("System is testing. No market operations will commence...");
@@ -219,7 +226,7 @@ async function main() {
   let buyOrder;
   try {
     buyOrder = await executeBuy(
-      state,
+      lastState,
       orderFactory,
       fraction,
       strategy,
