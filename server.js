@@ -186,6 +186,7 @@ async function main() {
   ) {
     console.log("Market transitioned to bearish... bailing out of positions.");
     await orderFactory.remargin(margin, stopMargin, true);
+    lastState = { ...currentState };
     return;
   }
 
